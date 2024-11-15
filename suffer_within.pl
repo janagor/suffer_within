@@ -19,10 +19,10 @@ path(garden, n, hall) :- at(golden_key, eq).
 path(hall, s, garden).
 
 path(garden, e, glasshouse).
-path(glasshouse, w, garden) :- retract(shot_enabled), write('Cannot Shot now!!!!!!!!!!!!!!!').
+path(glasshouse, w, garden) :- retract(shot_enabled).
 
 path(hall, w, library).
-path(library, e, hall).
+path(library, e, hall) :- clear_books.
 
 path(hall, e, banquet_hall).
 path(banquet_hall, w, hall).
@@ -197,10 +197,7 @@ interact(window) :-
 interact(book) :-
 	i_am_at(library),
 	interactable_at(book, library),
-	assert(at(rune1, library)),
-	retract(interactable_at(book, library)),
-	write('There was something inside of this book'), nl,
-	write('but when you opened the book it fell on the ground'),
+	books,
 	nl, !.
 
 interact(generator) :-
@@ -617,7 +614,8 @@ instructions :-
 
 start :-
         instructions,
-	init, %%
+	init_books,
+	init_shot,
         look.
 
 
@@ -831,7 +829,7 @@ describe(lab) :-
 	write('3. Y0U RUN F0R Y0UR L1F3 THR0UGH TH3 A1SL3'), nl.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% part including shooting game
+% start of part including shooting game
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 :- dynamic shots_counter/1, random_angle/1, shot_rock/1.
@@ -846,7 +844,7 @@ init_random_angle :-
     random_between(0, 90, X),
     assert(random_angle(X)).
 
-init :-
+init_shot :-
     init_random_angle,
     assert(shots_counter(0)),
     retractall(shot_enabled),
@@ -883,9 +881,45 @@ shot(Angle) :-
         write('You cannot shot anything.'), nl
     ).
 
-is_killed :-
-	(bird_killed -> write('yes') ; write('no')).
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % end of part including shooting game
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% start of part including library game
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+:- dynamic books_available/0, books/2, book_found/0.
+
+init_books :-
+    retractall(books_available),
+    retractall(book_found)
+
+books :-
+    ( \+ books_available, \+ book_found -> 
+        assert(books_available)
+    ;
+       true
+    ).
+
+book(X, Y) :-
+    ( \+ books_available; book_found ->
+        write('No books are available.'), nl
+    ;
+      ( X =< 0 ; X > 200 ; Y =< 0 ; Y > 200 ) ->
+        write('There are no books at such indexes!'), nl
+    ;
+      ( X =:= 89, Y =:= 144 ) ->
+	assert(at(rune1, library)),
+	retract(interactable_at(book, library)),
+	clear_books, assert(book_found),
+	write('There was something inside of this book'), nl,
+	write('but when you opened the book it fell on the ground'), nl
+    ;
+        write('Nothing special...'), nl
+    ).
+
+clear_books :-
+    retractall(books_available),
+    write('Books cleared.'), nl.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% end of part including library game
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

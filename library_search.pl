@@ -1,34 +1,31 @@
-:- dynamic books_available/0, book/2.
+:- dynamic books_available/0, books/2, book_found/0.
 
-interact(piece_of_paper) :-
-    write('Oh my proportions.'), nl,
-    write('The higher your values the closer we get to perfection...'), nl,
-    write('Like Fibonacci!'), nl.
-
-assert_books_in_range :-
-    forall(between(1, 200, X),  % X goes from 1 to 200
-           forall(between(1, 200, Y),  % Y goes from 1 to 200
-                  assertz(book(X, Y)))).
+init_books :-
+    retractall(books_available),
+    retractall(book_found).
 
 books :-
-    assertz(books_available),
-    assert_books_in_range.
+    ( \+ books_available, \+ book_found -> 
+        assert(books_available)
+    ;
+       true
+    ).
 
 book(X, Y) :-
-    books_available,
-    (
-    X > 200; Y > 200 ->  write('There are no books at such indexes!'), nl ; 
-    (X =:= 89, Y =:= 144) ->  write('GGGGG!'), nl ;
-    write('BAAAD'), nl
+    ( \+ books_available; book_found ->
+        true
+    ;
+      ( X =< 0 ; X > 200 ; Y =< 0 ; Y > 200 ) ->
+        write('There are no books at such indexes!'), nl
+    ;
+      ( X =:= 89, Y =:= 144 ) ->
+        write('GGGGG!'), nl, clear_books, assert(book_found)
+    ;
+        write('BAAAD'), nl
     ).
 
 clear_books :-
-    retractall(book(_, _)),
-    retract(books_available),
-    true.
+    retractall(books_available),
+    write('Books cleared.'), nl.
 
-init :-
-    retractall(book(_, _)),
-    retract(books_available),
-    true.
 
