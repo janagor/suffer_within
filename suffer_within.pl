@@ -19,7 +19,7 @@ path(garden, n, hall) :- at(golden_key, eq).
 path(hall, s, garden).
 
 path(garden, e, glasshouse).
-path(glasshouse, w, garden).
+path(glasshouse, w, garden) :- retract(shot_enabled), write('Cannot Shot now!!!!!!!!!!!!!!!').
 
 path(hall, w, library).
 path(library, e, hall).
@@ -165,9 +165,12 @@ interactable :-
 interact(slingshot) :-
 	i_am_at(glasshouse),
 	interactable_at(slingshot, glasshouse),
-	retract(interactable_at(slingshot, glasshouse)),
-	assert(at(golden_key, glasshouse)),
-	write('You shot a skeleton and a key from his mouth fell on the ground.'),
+	write('Now you can shoot the skeleton.'), nl,
+	write('To make a shot enter `shot()` with the number corresponding to '), nl,
+	write('an angle you want to shoot with. '), nl,
+	write('The angle should be a number between 0 and 90. '), nl,
+	write('Example: shot(45).'),
+	assert(shot_enabled),
 	nl,!.
 
 interact(piece_of_paper) :-
@@ -540,6 +543,7 @@ go(e) :-
 	write('You cant go out, its too dark out there!'),
 	nl, !.
 
+
 go(n) :-
 	i_am_at(high_security_prison),
 	on(generator),
@@ -613,6 +617,7 @@ instructions :-
 
 start :-
         instructions,
+	init, %%
         look.
 
 
@@ -825,4 +830,62 @@ describe(lab) :-
 	write('but y0u d0nt kn0w wh@t th3Y r34llY @r3.'), nl,write(''),nl,
 	write('3. Y0U RUN F0R Y0UR L1F3 THR0UGH TH3 A1SL3'), nl.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% part including shooting game
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+:- dynamic shots_counter/1, random_angle/1, shot_rock/1.
+:- dynamic shot_enabled/0, bird_killed/0, key_found/0.
+
+popup_message :-
+    write('While trying your best to shoot the key you got lost yourself...'), nl,
+    write('As you always do... You did not see the bird flying by window...'), nl,
+    write('The rock hit it and you could only see it dropping...'), nl.
+
+init_random_angle :-
+    random_between(0, 90, X),
+    assert(random_angle(X)).
+
+init :-
+    init_random_angle,
+    assert(shots_counter(0)),
+    retractall(shot_enabled),
+    retractall(bird_killed),
+    retractall(key_found).
+
+increment_counter :-
+    shots_counter(TC),
+    NewTC is TC + 1,
+    retract(shots_counter(TC)),
+    assert(shots_counter(NewTC)),
+    (NewTC =:= 7 -> (popup_message, assert(bird_killed)) ; true).
+
+check_shot(X) :-
+    random_angle(RA),
+    (
+        X =:= RA -> retract(interactable_at(slingshot, glasshouse)),
+		assert(at(golden_key, glasshouse)),
+		write('You shot a skeleton and a key from his mouth fell on the ground.'),
+		assert(key_found),
+		assert(bird_killed),
+		retract(shot_rock);
+        X < RA -> write('Too low...');
+        X > RA -> write('Too high...')
+    ),
+    nl.
+
+shot(Angle) :-
+    ( shot_enabled, \+ key_found ->
+        check_shot(Angle),
+	increment_counter,
+	nl
+    ;
+        write('You cannot shot anything.'), nl
+    ).
+
+is_killed :-
+	(bird_killed -> write('yes') ; write('no')).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% end of part including shooting game
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
