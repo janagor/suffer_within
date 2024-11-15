@@ -176,7 +176,10 @@ interact(slingshot) :-
 interact(piece_of_paper) :-
 	i_am_at(library),
 	interactable_at(piece_of_paper, library),
-	write('The only readable characters are some numbers: [tutaj wstawic numery]'),
+	write('I am a sequence where each number grows,'),
+	write('By adding the two that came before it, it shows.'),
+	write('Find the pair just under 200s crest,'),
+	write('The penultimate and ultimate in my test.'),
 	nl, !.
 
 interact(window) :-
@@ -219,9 +222,18 @@ interact(generator) :-
 	i_am_at(generator_room),
 	interactable_at(generator, generator_room),
 	assert(on(generator)),
+	at(magnetic_card, lust_cell),
 	retract(at(magnetic_card, lust_cell)),
 	write('The generator is turned on now.'),
 	nl, !.
+
+interact(generator) :-
+	i_am_at(generator_room),
+	interactable_at(generator, generator_room),
+	assert(on(generator)),
+	write('The generator is turned on now.'),
+	nl, !.
+
 
 interact(painting) :-
 	i_am_at(banquet_hall),
@@ -416,7 +428,7 @@ interact(h3lp) :-
 	write('wh1sp3r1ng 1n y0ur 34rs, thr34t3n1ng t0 d3stROY 4ll'), nl,
 	write('th@t y0u kn0w. Y0u r3@l1z3 th@t y0u h@v3'), nl,
 	write('f@ll3n 1nt0 th31r tr@p, @nd th@t n0t 3v3n y0u'), nl,
-	write(' c@nn0t 3sc@p3 th31r p0w3r. Y0ur b0dY 1s st1ll'), nl,
+	write('c@nn0t 3sc@p3 th31r p0w3r. Y0ur b0dY 1s st1ll'), nl,
 	write('y0urs, but y0ur s0ul 1s n0w th31rs.'), nl,nl,
 	write('2/3 Trap Ending. Use command:  halt.     to leave.'),
 	retractall(at(_, _)), retractall(i_am_at(_)), retractall(interactable_at(_, _)), retractall(used(_)),
@@ -424,7 +436,7 @@ interact(h3lp) :-
 
 interact(a1sl3) :-
 	i_am_at(lab),
-	interactable_at(a1sl3),
+	interactable_at(a1sl3, lab),
 	write('Running through the maze'),
 	nl, !.
 	
@@ -896,7 +908,7 @@ shot(Angle) :-
 
 init_books :-
     retractall(books_available),
-    retractall(book_found)
+    retractall(book_found).
 
 books :-
     ( \+ books_available, \+ book_found -> 
