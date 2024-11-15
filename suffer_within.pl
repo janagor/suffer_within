@@ -443,7 +443,8 @@ interact(a1sl3) :-
 	write('there as possible. A long journey lies ahead, with'), nl,
 	write('many questions waiting to be answered—who you'), nl,
 	write('are and how you ended up in that terrifying'), nl,
-	write('place. But you remain hopeful.'),
+	write('place. But you remain hopeful.'),nl,
+	write('3/3 Good Ending. Use command:  halt.     to leave.'),
 	nl, !.
 	
 interact(Object) :-
