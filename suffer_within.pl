@@ -197,6 +197,12 @@ interact(window) :-
 interact(book) :-
 	i_am_at(library),
 	interactable_at(book, library),
+	write('There are a lot of books in the library.'), nl,
+	write('They are indexed with two numbers: row and column from 0 to 200.'), nl,
+	write('You can search any of them with `book(_,_)` '), nl,
+	write('with numbers corresponding to the indexes. '), nl,
+	write('The angle should be between 1 and 200'), nl,
+	write('Example: book(100,100).'),
 	books,
 	nl, !.
 
