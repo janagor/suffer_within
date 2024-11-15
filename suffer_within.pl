@@ -176,10 +176,10 @@ interact(slingshot) :-
 interact(piece_of_paper) :-
 	i_am_at(library),
 	interactable_at(piece_of_paper, library),
-	write('I am a sequence where each number grows,'),
-	write('By adding the two that came before it, it shows.'),
-	write('Find the pair just under 200s crest,'),
-	write('The penultimate and ultimate in my test.'),
+	write('I am a sequence where each number grows,'), nl,
+	write('By adding the two that came before it, it shows.'), nl,
+	write('Find the pair just under 200s crest,'), nl,
+	write('The penultimate and ultimate in my test.'), nl,
 	nl, !.
 
 interact(window) :-
@@ -437,7 +437,13 @@ interact(h3lp) :-
 interact(a1sl3) :-
 	i_am_at(lab),
 	interactable_at(a1sl3, lab),
-	write('Running through the maze'),
+	write('You escaped through the hole, following the bird.'),nl,
+	write('It led you outside the building, and after what'), nl,
+	write('you saw inside, you decided to get as far away from'), nl,
+	write('there as possible. A long journey lies ahead, with'), nl,
+	write('many questions waiting to be answered—who you'), nl,
+	write('are and how you ended up in that terrifying'), nl,
+	write('place. But you remain hopeful.'),
 	nl, !.
 	
 interact(Object) :-
@@ -832,6 +838,7 @@ describe(wrath_cell) :-
 
 
 describe(lab) :-
+	interactable_at(a1sl3, lab),
 	write('Y0u ar3 1n th3 1ab0r@t0ry...'), nl,
 	write('Th3 d00r cl0s3s b3hind y0u...'), nl,
 	write('Gr33n l1qu1d f1lls th3 c0mp@rtm3nts w1th h@lf-c0nsci0us b0d13s.'), nl,
@@ -844,7 +851,23 @@ describe(lab) :-
 	write('l3@v3 th1s h0us3 @g@1n.'), nl,write(''),nl,
 	write('2. Y0u br34k th3 c0mp@rtm3nts @nd try t0 s@v3 th3s3 p30pl3,'), nl,
 	write('but y0u d0nt kn0w wh@t th3Y r34llY @r3.'), nl,write(''),nl,
-	write('3. Y0U RUN F0R Y0UR L1F3 THR0UGH TH3 A1SL3'), nl.
+	write('3. You noticed a chirping bird that flew out through a hole in the wall.'), nl,
+	write('You decide to escape through it too.'), nl, !.
+
+describe(lab) :-
+	write('Y0u ar3 1n th3 1ab0r@t0ry...'), nl,
+	write('Th3 d00r cl0s3s b3hind y0u...'), nl,
+	write('Gr33n l1qu1d f1lls th3 c0mp@rtm3nts w1th h@lf-c0nsci0us b0d13s.'), nl,
+	write('M@ny ch3m1c@l @pp@r@tus3s @r3 3v3rYwh3r3.'), nl,
+	write('@t th3 3nd, @ r3d c@rp3t c0v3rs th3 fl00r, w1th'), nl,
+	write('@ c1rcl3 0f fl@m3s @nd @n 0p3n b00k.'), nl, write(''),nl,
+	write('P!CK: '), nl,write(''),nl,
+	write('1. Y0u r34d wh@ts 1n th3 b00k @nd p3rf0rm th3 r1tual,'), nl,
+	write('b3c0m1ng 1mm0rt@l, but y0u c@nn0t 3v3r'), nl,
+	write('l3@v3 th1s h0us3 @g@1n.'), nl,write(''),nl,
+	write('2. Y0u br34k th3 c0mp@rtm3nts @nd try t0 s@v3 th3s3 p30pl3,'), nl,
+	write('but y0u d0nt kn0w wh@t th3Y r34llY @r3.'), nl,write(''),nl.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % start of part including shooting game
@@ -874,7 +897,7 @@ increment_counter :-
     NewTC is TC + 1,
     retract(shots_counter(TC)),
     assert(shots_counter(NewTC)),
-    (NewTC =:= 7 -> (popup_message, assert(bird_killed)) ; true).
+    (NewTC =:= 7 -> (popup_message, retract(interactable_at(a1sl3, lab))) ; true).
 
 check_shot(X) :-
     random_angle(RA),
@@ -935,8 +958,8 @@ book(X, Y) :-
     ).
 
 clear_books :-
-    retractall(books_available),
-    write('Books cleared.'), nl.
+    retractall(books_available).
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % end of part including library game
