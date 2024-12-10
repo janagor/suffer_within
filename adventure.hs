@@ -1,39 +1,40 @@
--- Suffer within - game by Jakub Antas, Jan Górski, Patryk Zdziech
-
 import Data.Maybe
+import System.Random
+import Control.Monad (foldM)
 
 --------------------------------------------------------------------------------
 -- TYPES -----------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+type Inventory = [String]
 type Interactables = [String]
 
 data Location = Location
   { name :: String,
     interactables :: Interactables,
+    items :: [String], -- Rzeczy do podniesienia w lokacji
     north :: Maybe Location,
     south :: Maybe Location,
     east :: Maybe Location,
     west :: Maybe Location
   }
 
-newtype Flags = Flags
-  { -- isBirdKilled :: Bool,
-    isHallOpen :: Bool
-    -- isEngineOn :: Bool
+data Flags = Flags
+  { isHallOpen :: Bool,
+    isBirdKilled :: Bool
   }
 
-data State = State {location :: Location, flags :: Flags}
+data State = State
+  { location :: Location,
+    flags :: Flags,
+    inventory :: Inventory -- Ekwipunek
+  }
 
 --------------------------------------------------------------------------------
 -- CONSTANTS -------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
---------------------------------------------------------------------------------
--- stany -----------------------------------------------------------------------
---------------------------------------------------------------------------------
-
-start = State {location = garden, flags = Flags {isHallOpen = False}}
+start = State {location = garden, flags = Flags {isHallOpen = False, isBirdKilled = False}, inventory = []}
 
 --------------------------------------------------------------------------------
 -- lokalizacje -----------------------------------------------------------------
@@ -44,6 +45,7 @@ garden =
   Location
     { name = "Garden",
       interactables = [],
+      items = [],
       north = Just hall,
       south = Nothing,
       east = Just glasshouse,
@@ -55,6 +57,7 @@ hall =
   Location
     { name = "Hall",
       interactables = [],
+      items = [],
       north = Nothing,
       south = Just garden,
       east = Just banquetHall,
@@ -66,6 +69,7 @@ glasshouse =
   Location
     { name = "Glasshouse",
       interactables = ["slingshot"],
+      items = ["slingshot"],
       north = Nothing,
       south = Nothing,
       east = Nothing,
@@ -76,7 +80,8 @@ library :: Location
 library =
   Location
     { name = "Library",
-      interactables = ["piece_of_paper", "window", "bool"],
+      interactables = ["piece_of_paper", "window", "book"],
+      items = ["piece_of_paper"],
       north = Nothing,
       south = Nothing,
       east = Just hall,
@@ -88,6 +93,7 @@ banquetHall =
   Location
     { name = "Banquet Hall",
       interactables = ["painting", "chandelier", "skeletons"],
+      items = [],
       north = Nothing,
       south = Nothing,
       east = Just closet,
@@ -99,6 +105,7 @@ closet =
   Location
     { name = "Closet",
       interactables = ["crystal ball", "floor"],
+      items = ["crystal ball"],
       north = Nothing,
       south = Nothing,
       east = Nothing,
@@ -108,6 +115,29 @@ closet =
 --------------------------------------------------------------------------------
 -- FUNKCJE ---------------------------------------------------------------------
 --------------------------------------------------------------------------------
+
+-- Funkcja sprawdzająca, czy gracz może przejść w danym kierunku
+canMove :: State -> Char -> Bool
+canMove state direction
+  | name (location state) == "Garden" && direction == 'n' =
+      "golden_key" `elem` inventory state
+  | otherwise = True
+
+-- Funkcja do zmiany pokoju na podstawie kierunku z uwzględnieniem ograniczeń
+move :: State -> Char -> IO State
+move state direction =
+  if canMove state direction
+    then do
+      let newLoc = case direction of
+            'n' -> fromMaybe (location state) (north (location state))
+            's' -> fromMaybe (location state) (south (location state))
+            'e' -> fromMaybe (location state) (east (location state))
+            'w' -> fromMaybe (location state) (west (location state))
+            _ -> location state
+      return state {location = newLoc}
+    else do
+      putStrLn "You need the golden key to go north from the Garden!"
+      return state
 
 -- print strings from list in separate lines
 printLines :: [String] -> IO ()
@@ -122,20 +152,71 @@ readCommand = do
 displayInteractables :: Interactables -> IO ()
 displayInteractables xs = putStr (unlines ("Interactables:" : xs))
 
--- Funkcja do zmiany pokoju na podstawie kierunku
-move :: Location -> Char -> Location
-move currentLocation direction = do
-  case direction of
-    'n' -> fromMaybe currentLocation (north currentLocation)
-    's' -> fromMaybe currentLocation (south currentLocation)
-    'e' -> fromMaybe currentLocation (east currentLocation)
-    'w' -> fromMaybe currentLocation (west currentLocation)
-    _ -> currentLocation
+displayItems :: [String] -> IO ()
+displayItems xs = putStr (unlines ("Items here:" : xs))
 
--- Funkcja do wyświetlania pokoju
+displayInventory :: Inventory -> IO ()
+displayInventory xs = putStr (unlines ("Inventory:" : xs))
+
+-- Wyświetlanie obecnej lokalizacji
 displayLocation :: Location -> IO ()
-displayLocation location = putStrLn $ "You are in the " ++ name location
+displayLocation loc = putStrLn $ "You are in the " ++ name loc
 
+-- Obsługa interakcji
+interactWith :: String -> State -> IO State
+interactWith "slingshot" state = playGuessingGame state
+interactWith item state = do
+  putStrLn $ "You cannot interact with " ++ item ++ "."
+  return state
+
+-- Podnoszenie przedmiotów
+pickUpItem :: String -> State -> IO State
+pickUpItem item state =
+  if item `elem` items (location state)
+    then do
+      putStrLn $ "You picked up " ++ item ++ "."
+      let newItems = filter (/= item) (items (location state))
+      let newLoc = (location state) {items = newItems}
+      let newInv = item : inventory state
+      return state {location = newLoc, inventory = newInv}
+    else do
+      putStrLn "This item is not here."
+      return state
+
+-- Minigierka zgadywania liczby
+playGuessingGame :: State -> IO State
+playGuessingGame state = do
+  target <- randomRIO (0, 90) -- Losowanie liczby
+  putStrLn "Welcome to the slingshot game! Guess a number between 0 and 90."
+  guessingLoop target 0 state
+
+guessingLoop :: Int -> Int -> State -> IO State
+guessingLoop target attempts state = do
+  putStr "Enter your guess: "
+  guessStr <- getLine
+  let guess = read guessStr :: Int
+  let newAttempts = attempts + 1
+  if guess < target
+    then do
+      putStrLn "Too low!"
+      guessingLoop target newAttempts state
+    else if guess > target
+      then do
+        putStrLn "Too high!"
+        guessingLoop target newAttempts state
+      else do
+        putStrLn "Congratulations! You guessed the number!"
+        let newLoc = if name (location state) == "Glasshouse"
+                       then (location state) {items = "golden_key" : items (location state)}
+                       else location state
+        if newAttempts >= 7
+          then do
+            putStrLn "You took too many shots... The bird is killed!"
+            let newFlags = (flags state) {isBirdKilled = True}
+            return state {location = newLoc, flags = newFlags}
+          else return state {location = newLoc}
+
+-- Pętla gry
 gameLoop :: State -> IO ()
 gameLoop state = do
   let loc = location state
@@ -144,24 +225,27 @@ gameLoop state = do
   let inter = interactables loc
   displayInteractables inter
 
-  putStr "Enter direction (n/s/e/w, or 'q' to quit): "
+  let itemsHere = items loc
+  displayItems itemsHere
+
+  displayInventory (inventory state)
+
+  putStr "Enter command (n/s/e/w to move, 'interact <item>', 'pickup <item>', or 'q' to quit): "
   command <- getLine
-  case command of
-    "q" -> putStrLn "Goodbye!"
+  case words command of
+    ["q"] -> putStrLn "Goodbye!"
+    ["interact", item] -> do
+      newState <- interactWith item state
+      gameLoop newState
+    ["pickup", item] -> do
+      newState <- pickUpItem item state
+      gameLoop newState
+    [dir] -> do
+      newState <- foldM move state dir
+      gameLoop newState
     _ -> do
-      let local = foldl move loc command
-      let flgs = flags state
-
-      let isopen = isHallOpen flgs
-
-      case local of
-        Location "Library" _ _ _ _ _ -> do
-          putStrLn "You are in the Library!"
-          let whatever = State {location = local, flags = Flags {isHallOpen = False}}
-          gameLoop whatever
-        _ -> do
-          let whatever = State {location = local, flags = flags state}
-          gameLoop whatever
+      putStrLn "Invalid command."
+      gameLoop state
 
 main = do
   gameLoop start
