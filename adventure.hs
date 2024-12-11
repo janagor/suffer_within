@@ -180,7 +180,7 @@ closet =
       "The air smells of dampness and mildew, and the darkness seems to swallow every corner.\n" ++
       "The place holds more secrets than it lets on, hidden beneath layers of dust and shadow.",
 
-      interactables = ["crystal ball", "floor"],
+      interactables = ["crystal_ball", "floor"],
       items = [],
       north = Nothing,
       south = Nothing,
@@ -241,45 +241,120 @@ displayLocation loc = putStrLn $ description loc
 -- Obsługa interakcji
 interactWith :: String -> State -> IO State
 interactWith "slingshot" state =
-  if hasPlayedSlingshot (flags state)
-    then do
-      putStrLn "You have already played the slingshot game."
-      return state
-    else do
-      newState <- playGuessingGame state
-      let newLoc = (location newState) {interactables = filter (/= "slingshot") (interactables (location newState))}
-      return newState {location = newLoc}
-interactWith "piece_of_paper" state = do
-  putStrLn ""
-  putStrLn "I am a sequence where each number grows"
-  putStrLn "By adding the two that came before it, it shows"
-  putStrLn "Find the pair just under 200s crest"
-  putStrLn "The penultimate and ultimate in my test"
-  putStrLn ""
-  return state
-interactWith "window" state = do
-  let windowState = isWindowOpen (flags state)
-  if windowState
-    then putStrLn "You close the window. It becomes quiet."
-    else putStrLn "You open the window. You can hear the wind blowing from outside."
-  let updatedFlags = (flags state) {isWindowOpen = not windowState}
-  return state {flags = updatedFlags}
-interactWith "painting" state = do
-  putStrLn "In the painting: A thick fog blankets a dark, twisted forest"
-  putStrLn "Gnarled trees loom like dark silhouettes, their branches"
-  putStrLn "reaching out like claws. In the distance, a decaying"
-  putStrLn "mansion stands, its broken windows resembling"
-  putStrLn "hollow eyes. The faint glow of a flickering lantern"
-  putStrLn "casts an eerie light on a narrow, winding path"
-  putStrLn "leading toward the mansion, swallowed by the thick darkness."
-  return state
-interactWith "chandelier" state = do
-  putStrLn "The broken chandelier swings, its shattered crystals casting"
-  putStrLn "twisted shadows in the dim light – better not walk beneath it."
-  return state
+  let loc = location state
+  in if "slingshot" `elem` interactables loc
+       then
+         if hasPlayedSlingshot (flags state)
+           then do
+             putStrLn "You have already played the slingshot game."
+             return state
+           else do
+             newState <- playGuessingGame state
+             let newLoc = (location newState) {interactables = filter (/= "slingshot") (interactables (location newState))}
+             return newState {location = newLoc}
+       else do
+         putStrLn "There is no slingshot here to interact with."
+         return state
+
+interactWith "piece_of_paper" state =
+  let loc = location state
+  in if "piece_of_paper" `elem` interactables loc
+       then do
+         putStrLn ""
+         putStrLn "I am a sequence where each number grows"
+         putStrLn "By adding the two that came before it, it shows"
+         putStrLn "Find the pair just under 200s crest"
+         putStrLn "The penultimate and ultimate in my test"
+         putStrLn ""
+         return state
+       else do
+         putStrLn "There is no piece of paper here to interact with."
+         return state
+
+interactWith "window" state =
+  let loc = location state
+  in if "window" `elem` interactables loc
+       then do
+         let windowState = isWindowOpen (flags state)
+         if windowState
+           then putStrLn "You close the window. It becomes quiet."
+           else putStrLn "You open the window. You can hear the wind blowing from outside."
+         let updatedFlags = (flags state) {isWindowOpen = not windowState}
+         return state {flags = updatedFlags}
+       else do
+         putStrLn "There is no window here to interact with."
+         return state
+
+interactWith "painting" state =
+  let loc = location state
+  in if "painting" `elem` interactables loc
+       then do
+         putStrLn "In the painting: A thick fog blankets a dark, twisted forest"
+         putStrLn "Gnarled trees loom like dark silhouettes, their branches"
+         putStrLn "reaching out like claws. In the distance, a decaying"
+         putStrLn "mansion stands, its broken windows resembling"
+         putStrLn "hollow eyes. The faint glow of a flickering lantern"
+         putStrLn "casts an eerie light on a narrow, winding path"
+         putStrLn "leading toward the mansion, swallowed by the thick darkness."
+         return state
+       else do
+         putStrLn "There is no painting here to interact with."
+         return state
+
+interactWith "chandelier" state =
+  let loc = location state
+  in if "chandelier" `elem` interactables loc
+       then do
+         putStrLn "The broken chandelier swings, its shattered crystals casting"
+         putStrLn "twisted shadows in the dim light – better not walk beneath it."
+         return state
+       else do
+         putStrLn "There is no chandelier here to interact with."
+         return state
+
+interactWith "skeletons" state =
+  let loc = location state
+  in if "skeletons" `elem` interactables loc
+       then do
+         putStrLn ""
+         putStrLn "Decayed skeletons are scattered around. Some sit in chairs,"
+         putStrLn "others lie on the floor, their bones twisted and lifeless."
+         putStrLn "Flickering light casts eerie shadows on their empty eye sockets."
+         putStrLn ""
+         return state
+       else do
+         putStrLn "There are no skeletons here to interact with."
+         return state
+
+interactWith "crystal_ball" state =
+  let loc = location state
+  in if "crystal_ball" `elem` interactables loc
+       then do
+         putStrLn "You picked up the crystal ball, but it slipped"
+         putStrLn "from your hands and fell to the ground, shattering."
+         putStrLn "Something strange fell out of it."
+         let newItems = "rune2" : items (location state)  -- Dodajemy "rune2" do items w lokacji
+         let newLoc = (location state) {items = newItems}  -- Aktualizujemy lokację
+         return state {location = newLoc}
+       else do
+         putStrLn "There is no crystal ball here to interact with."
+         return state
+
+interactWith "floor" state =
+  let loc = location state
+  in if "floor" `elem` interactables loc
+       then do
+         putStrLn "There is such a mess in here..."
+         return state
+       else do
+         putStrLn "There is no floor here to interact with."
+         return state
+
+-- Default case: Inform that the item is not interactable in the current location
 interactWith item state = do
   putStrLn $ "You cannot interact with " ++ item ++ "."
   return state
+
 
 -- Podnoszenie przedmiotów
 pickUpItem :: String -> State -> IO State
