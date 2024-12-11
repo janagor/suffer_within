@@ -21,7 +21,8 @@ data Location = Location
 
 data Flags = Flags
   { isHallOpen :: Bool,
-    isBirdKilled :: Bool
+    isBirdKilled :: Bool,
+    hasPlayedSlingshot :: Bool -- Flaga oznaczająca, czy minigra została już rozegrana
   }
 
 data State = State
@@ -34,7 +35,7 @@ data State = State
 -- CONSTANTS -------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
-start = State {location = garden, flags = Flags {isHallOpen = False, isBirdKilled = False}, inventory = []}
+start = State {location = garden, flags = Flags {isHallOpen = False, isBirdKilled = False, hasPlayedSlingshot = False}, inventory = []}
 
 --------------------------------------------------------------------------------
 -- lokalizacje -----------------------------------------------------------------
@@ -69,7 +70,7 @@ glasshouse =
   Location
     { name = "Glasshouse",
       interactables = ["slingshot"],
-      items = ["slingshot"],
+      items = [],
       north = Nothing,
       south = Nothing,
       east = Nothing,
@@ -81,7 +82,7 @@ library =
   Location
     { name = "Library",
       interactables = ["piece_of_paper", "window", "book"],
-      items = ["piece_of_paper"],
+      items = [],
       north = Nothing,
       south = Nothing,
       east = Just hall,
@@ -105,7 +106,7 @@ closet =
   Location
     { name = "Closet",
       interactables = ["crystal ball", "floor"],
-      items = ["crystal ball"],
+      items = [],
       north = Nothing,
       south = Nothing,
       east = Nothing,
@@ -164,7 +165,15 @@ displayLocation loc = putStrLn $ "You are in the " ++ name loc
 
 -- Obsługa interakcji
 interactWith :: String -> State -> IO State
-interactWith "slingshot" state = playGuessingGame state
+interactWith "slingshot" state =
+  if hasPlayedSlingshot (flags state)
+    then do
+      putStrLn "You have already played the slingshot game."
+      return state
+    else do
+      newState <- playGuessingGame state
+      let newLoc = (location newState) {interactables = filter (/= "slingshot") (interactables (location newState))}
+      return newState {location = newLoc}
 interactWith item state = do
   putStrLn $ "You cannot interact with " ++ item ++ "."
   return state
@@ -209,12 +218,13 @@ guessingLoop target attempts state = do
         let newLoc = if name (location state) == "Glasshouse"
                        then (location state) {items = "golden_key" : items (location state)}
                        else location state
+        let newFlags = (flags state) {hasPlayedSlingshot = True}
         if newAttempts >= 7
           then do
             putStrLn "You took too many shots... The bird is killed!"
-            let newFlags = (flags state) {isBirdKilled = True}
-            return state {location = newLoc, flags = newFlags}
-          else return state {location = newLoc}
+            let updatedFlags = newFlags {isBirdKilled = True}
+            return state {location = newLoc, flags = updatedFlags}
+          else return state {location = newLoc, flags = newFlags}
 
 -- Pętla gry
 gameLoop :: State -> IO ()
