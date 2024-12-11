@@ -88,7 +88,7 @@ hall =
 
       interactables = [],
       items = [],
-      north = Nothing,
+      north = Just low_security_prison,
       south = Just garden,
       east = Just banquetHall,
       west = Just library
@@ -187,6 +187,240 @@ closet =
       east = Nothing,
       west = Just banquetHall
     }
+
+low_security_prison :: Location
+low_security_prison =
+  Location
+    { name = "Low Security Prison",
+      description = "You are in the low security prison.\n" ++
+      "The room is dimly lit, with two small cells on either\n" ++
+      "side, their rusted barred doors creaking. The air is\n" ++
+      "stale, filled with the scent of mold and cold stone.\n" ++
+      "Ahead, through open metal doors, lies another\n" ++
+      "similar room, and the sound of dripping water\n" ++
+      "echoes through the silence. The oppressive stillness\n" ++
+      "makes the space feel even more confining.\n",
+
+      interactables = [],
+      items = [],
+      north = Just medium_security_prison,
+      south = Just hall,  -- Can go back to the hall
+      east = Just lust_cell,
+      west = Just gluttony_cell
+    }
+
+gluttony_cell :: Location
+gluttony_cell =
+  Location
+    { name = "Gluttony Cell",
+      description = "You are in the gluttony cell.\n" ++
+      "The room reeks of spoiled food and decay. Cracked\n" ++
+      "plates and tarnished cutlery are scattered\n" ++
+      "around, some half-buried in mold. A rusted bedframe\n" ++
+      "lies under piles of rotting food, and the floor is\n" ++
+      "sticky with spilled wine and spoiled meat. In the\n" ++
+      "corner, a chest overflows with scraps of fabric,\n" ++
+      "bones, and remnants of feasts. The air is thick\n" ++
+      "with the stench of excess and decay, a grim reminder\n" ++
+      "of gluttony’s punishment.\n",
+
+      interactables = ["rotting_food", "floor", "chest"],
+      items = [],
+      east = Just low_security_prison,  -- Can go back to low_security_prison
+      west = Nothing,  -- No further west
+      north = Nothing,
+      south = Nothing
+    }
+
+lust_cell :: Location
+lust_cell =
+  Location
+    { name = "Lust Cell",
+      description = "You are in the lust cell.\n" ++
+      "The room is dim and heavy with the scent of\n" ++
+      "perfume and stale sweat. Faded tapestries hang on the\n" ++
+      "walls, depicting intimate scenes. A narrow bed with\n" ++
+      "torn silk sheets sits in the center, surrounded by\n" ++
+      "broken mirrors reflecting fragmented images. In the\n" ++
+      "corner, an old vanity with twisted jewelry and\n" ++
+      "faded love letters adds to the oppressive atmosphere,\n" ++
+      "filled with the remnants of unchecked desire.\n" ++
+      "In the corner, there is a magnetic card held by a\n" ++
+      "large electric magnet. There is no way to take it\n" ++
+      "while this magnet is powered on.\n",
+
+      interactables = ["magnet", "tapestry", "broken_mirrors"],
+      items = [],
+      west = Just low_security_prison,  -- Can go back to low_security_prison
+      east = Nothing,  -- No further east
+      north = Nothing,
+      south = Nothing
+    }
+
+medium_security_prison :: Location
+medium_security_prison =
+  Location
+    { name = "Medium Security Prison",
+      description = "You are in the medium security prison.\n" ++
+      "The room is cold, with faded grey stone walls. Two\n" ++
+      "empty cells stand on either side, their bars casting\n" ++
+      "long shadows. A metal door leads to another similar\n" ++
+      "room, behind heavy iron gates. The floor is\n" ++
+      "cracked and stained, and dim light from a flickering\n" ++
+      "bulb casts eerie shadows across the space\n" ++
+      "giving the room a heavy, oppressive feeling.\n",
+
+      interactables = [],
+      items = [],
+      north = Just high_security_prison, 
+      south = Just low_security_prison,  -- Link back to low_security_prison
+      east = Just sloth_cell,
+      west = Just envy_cell
+    }
+
+envy_cell :: Location
+envy_cell =
+  Location
+    { name = "Envy Cell",
+      description = "You are in the envy cell.\n" ++
+      "The room is cold and empty, with cracked walls\n" ++
+      "closing in. A narrow cot sits against one wall,\n" ++
+      "covered by a thin, tattered blanket and a notebook on it. A small,\n" ++
+      "tarnished mirror on the opposite wall distorts the\n" ++
+      "reflection. The air feels thick with bitterness, and\n" ++
+      "a small window offers only a sliver of the outside\n" ++
+      "world. The floor is covered in a layer of dust,\n" ++
+      "untouched, as if no one has ever truly rested here.\n",
+
+      interactables = ["blanket", "notebook"],
+      items = [],
+      north = Nothing,
+      south = Nothing,
+      east = Just medium_security_prison,  -- Link back to medium_security_prison
+      west = Nothing  -- No further west
+    }
+
+sloth_cell :: Location
+sloth_cell =
+  Location
+    { name = "Sloth Cell",
+      description = "You are in the sloth cell.\n" ++
+      "The room is dim and neglected, with a sagging\n" ++
+      "bed in the corner. Empty containers and crumpled\n" ++
+      "papers litter the floor. A cracked lamp barely\n" ++
+      "lights the space, and the air is stale, untouched by\n" ++
+      "effort or care.\n",
+
+      interactables = ["paper", "written_paper"],
+      items = ["unlit_torch"],
+      north = Nothing,
+      south = Nothing,
+      east = Nothing,
+      west = Just medium_security_prison  -- Link back to medium_security_prison
+    }
+
+high_security_prison :: Location
+high_security_prison =
+  Location
+    { name = "High Security Prison",
+      description = "You are in the high security prison.\n" ++
+      "The room is stark and oppressive, with an atmosphere\n" ++
+      "of cold metal and concrete. To the right, a cell\n" ++
+      "stands behind thick, reinforced bars, making it clear\n" ++
+      "this is a place of high security. To the left, heavy\n" ++
+      "steel doors loom, their solid form unyielding and\n" ++
+      "intimidating. In front of you, there is another set of\n" ++
+      "doors, even more imposing, with a magnetic card\n" ++
+      "reader beside them, suggesting a high-tech lock\n" ++
+      "system. Everything in this room exudes a sense\n" ++
+      "of being locked down, impenetrable, and designed\n" ++
+      "to keep any potential threat contained.\n",
+
+      interactables = [],
+      items = [],
+      north = Just lab,
+      south = Just medium_security_prison,  -- Link back to medium_security_prison
+      east = Just wrath_cell,
+      west = Just generator_room
+    }
+
+generator_room :: Location
+generator_room =
+  Location
+    { name = "Generator Room",
+      description = "You are in the generator room.\n" ++
+      "The room vibrates with the hum of a massive generator\n" ++
+      "at its center, filling the air with the scent of\n" ++
+      "oil and metal. Pipes and wires snake along the walls,\n" ++
+      "some hissing softly. The floor is stained, and the\n" ++
+      "flickering lights cast unsettling shadows, making\n" ++
+      "the room feel both powerful and dangerous.\n",
+
+      interactables = ["lit_torch", "generator"],
+      items = [],
+      north = Nothing,
+      south = Nothing,
+      east = Just high_security_prison,  -- Link back to high_security_prison
+      west = Nothing
+    }
+
+wrath_cell :: Location
+wrath_cell =
+  Location
+    { name = "Wrath Cell",
+      description = "You are in the wrath cell.\n" ++
+      "The cell is dark and cramped, with the walls\n" ++
+      "seemingly closing in. Scratches and dents mar the\n" ++
+      "surfaces, as if something—or someone—has been\n" ++
+      "violently thrashing. In one corner, a broken chair\n" ++
+      "lies half-smashed, and shattered glass glistens on\n" ++
+      "the floor. The air is thick with a sense of rage that\n" ++
+      "never left, a heaviness that hangs in the oppressive\n" ++
+      "silence. A rusted, bloodstained chain dangles\n" ++
+      "from the ceiling, suggesting past violence, while the\n" ++
+      "faint smell of sweat and anger lingers in the air.\n",
+
+      interactables = ["chain", "chair"],
+      items = [],
+      north = Nothing,
+      south = Nothing,
+      east = Nothing,
+      west = Just high_security_prison  -- Link back to high_security_prison
+    }
+
+
+lab :: Location
+lab =
+  Location
+    { name = "Laboratory",
+      description = "Y0u ar3 1n th3 1ab0r@t0ry...\n" ++
+      "Th3 d00r cl0s3s b3hind y0u...\n" ++
+      "Gr33n l1qu1d f1lls th3 c0mp@rtm3nts w1th h@lf-c0nsci0us b0d13s.\n" ++
+      "M@ny ch3m1c@l @pp@r@tus3s @r3 3v3rYwh3r3.\n" ++
+      "@t th3 3nd, @ r3d c@rp3t c0v3rs th3 fl00r, w1th\n" ++
+      "@ c1rcl3 0f fl@m3s @nd @n 0p3n b00k.\n\n" ++
+      "P!CK:\n\n" ++
+      "1. Y0u r34d wh@ts 1n th3 b00k @nd p3rf0rm th3 r1tual,\n" ++
+      "b3c0m1ng 1mm0rt@l, but y0u c@nn0t 3v3r\n" ++
+      "l3@v3 th1s h0us3 @g@1n.\n\n" ++
+      "2. Y0u br34k th3 c0mp@rtm3nts @nd try t0 s@v3 th3s3 p30pl3,\n" ++
+      "but y0u d0nt kn0w wh@t th3Y r34llY @r3.\n\n" ++
+      "3. You noticed a chirping bird that flew out through a hole in the wall.\n" ++
+      "You decide to escape through it too.\n",
+
+      interactables = ["r1tual", "h3lp", "a1sl3"],
+      items = [],
+      north = Nothing,
+      south = Nothing,  -- No way back to high_security_prison
+      east = Nothing,
+      west = Nothing
+    }
+
+
+
+
+
+
 
 --------------------------------------------------------------------------------
 -- FUNKCJE ---------------------------------------------------------------------
