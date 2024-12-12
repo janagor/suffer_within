@@ -224,7 +224,7 @@ gluttony_cell =
       "with the stench of excess and decay, a grim reminder\n" ++
       "of gluttony’s punishment.\n",
 
-      interactables = ["rotting_food", "floor", "chest"],
+      interactables = ["rotting_food", "dirty_floor", "chest"],
       items = [],
       east = Just low_security_prison,  -- Can go back to low_security_prison
       west = Nothing,  -- No further west
@@ -583,6 +583,236 @@ interactWith "floor" state =
        else do
          putStrLn "There is no floor here to interact with."
          return state
+
+interactWith "rotting_food" state =
+  let loc = location state
+  in if "rotting_food" `elem` interactables loc
+       then do
+         putStrLn "A lot of stinky, fat, rotting food. It smells horribly..."
+         return state
+       else do
+         putStrLn "There is no rotting_food here to interact with."
+         return state
+
+
+interactWith "dirty_floor" state =
+  let loc = location state
+  in if "dirty_floor" `elem` interactables loc
+       then do
+         putStrLn "Floor is really sticky. Somebody spilled a lot of wine in there."
+         return state
+       else do
+         putStrLn "There is no dirty_floor here to interact with."
+         return state
+
+interactWith "chest" state =
+  let loc = location state
+  in if "chest" `elem` interactables loc
+       then do
+         putStrLn "A chest full of bones and some kind of meat. I hope"
+         putStrLn "its not a human..."
+         return state
+       else do
+         putStrLn "There is no chest here to interact with."
+         return state
+
+interactWith "magnet" state =
+  let loc = location state
+  in if "magnet" `elem` interactables loc
+       then do
+         putStrLn "Such a strong magnet. Looks like its powered by electicity."
+         return state
+       else do
+         putStrLn "There is no magnet here to interact with."
+         return state
+
+
+interactWith "tapestry" state =
+  let loc = location state
+  in if "tapestry" `elem` interactables loc
+       then do
+         putStrLn "The tapestry depicts a man and a woman, naked, passionately kissing."
+         return state
+       else do
+         putStrLn "There is no tapestry here to interact with."
+         return state
+
+interactWith "broken_mirrors" state =
+  let loc = location state
+  in if "broken_mirrors" `elem` interactables loc
+       then do
+         putStrLn "There is a lot of broken mirrors laying on the ground."
+         putStrLn "Looks like a person here cared about his looks a lot..."
+         return state
+       else do
+         putStrLn "There is no broken_mirrors here to interact with."
+         return state
+
+interactWith "blanket" state =
+  let loc = location state
+  in if "blanket" `elem` interactables loc
+       then do
+         putStrLn "A terribly torn blanket—someone must have suffered greatly here."
+         return state
+       else do
+         putStrLn "There is no blanket here to interact with."
+         return state
+
+interactWith "notebook" state =
+  let loc = location state
+  in if "notebook" `elem` interactables loc
+       then do
+         putStrLn "I cant take this anymore. Its driving me insane."
+         putStrLn "These bastards keep forcing us to drink some"
+         putStrLn "kind of potions, and every time, I feel worse."
+         putStrLn "My body is burning, my head is spinning, and I cant"
+         putStrLn "stop shaking. Its like theyre doing this on purpose."
+         putStrLn "My cellmate—he mentioned something about"
+         putStrLn "them testing their potions on us, trying to find a cure"
+         putStrLn "for immortality. I dont even know what to believe anymore."
+         putStrLn "Theyve labeled me as envious. Envious? I was just talking"
+         putStrLn "to my coworkers wife, for Gods sake! Its"
+         putStrLn "all a misunderstanding, a fucking mistake. I swear"
+         putStrLn "to God, I wasnt doing anything wrong. But now"
+         putStrLn "they have me here, locked up in this hellhole,"
+         putStrLn "torturing me with their drugs and lies."
+         putStrLn "Im so fucking scared. What are they doing to us?"
+         putStrLn "I just want out of here. I dont deserve this. Please..."
+         putStrLn "please, someone, just let us go............"
+
+         return state
+       else do
+         putStrLn "There is no notebook here to interact with."
+         return state
+
+interactWith "paper" state =
+  let loc = location state
+  in if "paper" `elem` interactables loc
+       then do
+         putStrLn "He was too lazy to stand up and throw them into the bin..."
+         return state
+       else do
+         putStrLn "There is no paper here to interact with."
+         return state
+
+interactWith "written_paper" state =
+  let loc = location state
+  in if "written_paper" `elem` interactables loc
+       then do
+         putStrLn "I dont understand why they keep me here. All I"
+         putStrLn "ever wanted was a happy life, nothing more. I"
+         putStrLn "never asked for this... for any of this. The fear..."
+         putStrLn "its overwhelming. I feel trapped, like a caged"
+         putStrLn "animal. The things that keep me here, I dont"
+         putStrLn "even think they are fully human. They speak in a"
+         putStrLn "strange way, like their words are not their own,"
+         putStrLn "and their eyes... they are empty, lifeless. No"
+         putStrLn "emotion. Just cold, heartless beings. Their cruelty"
+         putStrLn "knows no bounds. They dont care, they never"
+         putStrLn "cared. I cant escape, no matter how hard I try. I fear"
+         putStrLn "they have already taken something from me,"
+         putStrLn "something inside. I dont know how much longer"
+         putStrLn "I can endure this. Please, someone... anyone... I"
+         putStrLn "just want to be free..."
+
+         return state
+       else do
+         putStrLn "There is no written_paper here to interact with."
+         return state
+
+interactWith "lit_torch" state =
+  let loc = location state
+  in if "lit_torch" `elem` interactables loc
+       then do
+         putStrLn "The torch is burning but fixed to the wall."
+         putStrLn "You could definitely use it to set something on fire."
+
+         return state
+       else do
+         putStrLn "There is no lit_torch here to interact with."
+         return state
+
+interactWith "chain" state =
+  let loc = location state
+  in if "chain" `elem` interactables loc
+       then do
+         putStrLn "The chain is covered in a large amount of dried"
+         putStrLn "blood, as if someone had been hung here by their"
+         putStrLn "hands, struggling violently and injuring themselves."
+
+         return state
+       else do
+         putStrLn "There is no chain here to interact with."
+         return state
+
+interactWith "chair" state =
+  let loc = location state
+  in if "chair" `elem` interactables loc
+       then do
+         putStrLn "The chair is barely holding together; someone must have thrown it around a lot."
+
+         return state
+       else do
+         putStrLn "There is no chair here to interact with."
+         return state
+
+
+interactWith "r1tual" state =
+  let loc = location state
+  in if "r1tual" `elem` interactables loc
+       then do
+         putStrLn "Y0u b3c0m3 1mm0rt@l, but @t th3 c0st 0f n3v3r"
+         putStrLn "b3ing @bl3 t0 l34v3 th1s h0us3. T3rr0r1f1c v01c3s"
+         putStrLn "p0ss3ss y0u, dr1v1ng y0u t0 m@dness."
+         putStrLn "Y0u w1ll n3v3r kn0w p3@c3 @g@1n..."
+         putStrLn "1/3 Madness Ending. Use command:  q     to leave."
+         putStrLn ""
+
+         return state
+       else do
+         putStrLn "There is no r1tual here to interact with."
+         return state
+
+
+interactWith "h3lp" state =
+  let loc = location state
+  in if "h3lp" `elem` interactables loc
+       then do
+         putStrLn "Y0u m@n@g3 t0 fr33 th3 p30pl3 1n th3 gr33n l1qu1d,"
+         putStrLn "@nd th3Y r34v3@l th31r trU3 f0rm. Th3y"
+         putStrLn "@r3 n0t hum@ns, but s0m3th1ng m0r3 d@rk @nd"
+         putStrLn "anc13nt. Th3y b3g1n t0 c0rrupt y0ur m1nd,"
+         putStrLn "wh1sp3r1ng 1n y0ur 34rs, thr34t3n1ng t0 d3stROY 4ll"
+         putStrLn "th@t y0u kn0w. Y0u r3@l1z3 th@t y0u h@v3"
+         putStrLn "f@ll3n 1nt0 th31r tr@p, @nd th@t n0t 3v3n y0u"
+         putStrLn "c@nn0t 3sc@p3 th31r p0w3r. Y0ur b0dY 1s st1ll"
+         putStrLn "y0urs, but y0ur s0ul 1s n0w th31rs."
+         putStrLn "2/3 Trap Ending. Use command:  q     to leave."
+
+         return state
+       else do
+         putStrLn "There is no h3lp here to interact with."
+         return state
+
+
+interactWith "a1sl3" state =
+  let loc = location state
+  in if "a1sl3" `elem` interactables loc
+       then do
+         putStrLn "You escaped through the hole, following the bird."
+         putStrLn "It led you outside the building, and after what"
+         putStrLn "you saw inside, you decided to get as far away from"
+         putStrLn "there as possible. A long journey lies ahead, with"
+         putStrLn "many questions waiting to be answered—who you"
+         putStrLn "are and how you ended up in that terrifying"
+         putStrLn "place. But you remain hopeful."
+         putStrLn "3/3 Good Ending. Use command:  q     to leave."
+
+         return state
+       else do
+         putStrLn "There is no chair here to interact with."
+         return state
+
 
 -- Default case: Inform that the item is not interactable in the current location
 interactWith item state = do
