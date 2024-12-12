@@ -1,4 +1,5 @@
 import Control.Monad (foldM)
+import Data.List (isInfixOf)
 import Data.Maybe
 import System.Random
 
@@ -407,10 +408,8 @@ lab =
           ++ "b3c0m1ng 1mm0rt@l, but y0u c@nn0t 3v3r\n"
           ++ "l3@v3 th1s h0us3 @g@1n.\n\n"
           ++ "2. Y0u br34k th3 c0mp@rtm3nts @nd try t0 s@v3 th3s3 p30pl3,\n"
-          ++ "but y0u d0nt kn0w wh@t th3Y r34llY @r3.\n\n"
-          ++ "3. You noticed a chirping bird that flew out through a hole in the wall.\n"
-          ++ "You decide to escape through it too.\n",
-      interactables = ["r1tual", "h3lp", "a1sl3"],
+          ++ "but y0u d0nt kn0w wh@t th3Y r34llY @r3.\n\n",
+      interactables = ["r1tual", "h3lp"],
       items = [],
       north = Nothing,
       south = Nothing, -- No way back to high_security_prison
@@ -421,6 +420,24 @@ lab =
 --------------------------------------------------------------------------------
 -- FUNKCJE ---------------------------------------------------------------------
 --------------------------------------------------------------------------------
+descriptionContainsBird :: Location -> Bool
+descriptionContainsBird loc =
+  "You notice a chirping bird" `isInfixOf` description loc
+
+updateDynamicLocation :: State -> State
+updateDynamicLocation state
+  | name (location state) == "Laboratory"
+      && not (isBirdKilled (flags state))
+      && not ("a1sl3" `elem` dinamicInteractables state)
+      && not (descriptionContainsBird (location state)) =
+      let loc = location state
+          newDescription =
+            description loc
+              ++ "3. You noticed a chirping bird that flew out through a hole in the wall.\n"
+              ++ "You decide to escape through it too.\n"
+          updatedLocation = loc {description = newDescription}
+       in state {location = updatedLocation, dinamicInteractables = "a1sl3" : dinamicInteractables state}
+  | otherwise = state
 
 updateDynamicInteractables :: State -> State
 updateDynamicInteractables state
@@ -460,7 +477,8 @@ move state direction =
             'w' -> fromMaybe (location state) (west (location state))
             _ -> location state
       let state1 = state {location = newLoc}
-      let updatedState = updateDynamicInteractables state1
+      let updatedStateDynamic = updateDynamicInteractables state1
+      let updatedState = updateDynamicLocation updatedStateDynamic
 
       return updatedState -- {location = newLoc}
     else do
@@ -787,8 +805,10 @@ interactWith "h3lp" state =
           putStrLn "There is no h3lp here to interact with."
           return state
 interactWith "a1sl3" state =
-  let loc = location state
-   in if "a1sl3" `elem` interactables loc
+  let interLoc = interactables (location state)
+      interState = dinamicInteractables state
+      combined = interLoc ++ interState
+   in if "a1sl3" `elem` combined
         then do
           putStrLn "You escaped through the hole, following the bird."
           putStrLn "It led you outside the building, and after what"
@@ -798,7 +818,6 @@ interactWith "a1sl3" state =
           putStrLn "are and how you ended up in that terrifying"
           putStrLn "place. But you remain hopeful."
           putStrLn "3/3 Good Ending. Use command:  q     to leave."
-
           return state
         else do
           putStrLn "There is no chair here to interact with."
@@ -852,7 +871,7 @@ guessingLoop target attempts state = do
                   then (location state) {items = "golden_key" : items (location state)}
                   else location state
           let newFlags = (flags state) {hasPlayedSlingshot = True}
-          if newAttempts >= 7
+          if newAttempts >= 10
             then do
               putStrLn "You took too many shots... The bird is killed!"
               let updatedFlags = newFlags {isBirdKilled = True}
@@ -883,11 +902,24 @@ gameLoop state = do
   putStr "Enter command (n/s/e/w to move, 'interact <item>', 'pickup <item>', or 'q' to quit): "
   command <- getLine
   putStrLn ""
+
   case words command of
     ["q"] -> putStrLn "Goodbye!"
     ["interact", item] -> do
       newState <- interactWith item state
-      gameLoop newState
+      if item == "r1tual"
+        then
+          putStrLn "r1tual"
+        else
+          if item == "a1sl3"
+            then
+              putStrLn "a1sl3"
+            else
+              if item == "h3lp"
+                then
+                  putStrLn "h3lp"
+                else do
+                  gameLoop newState
     ["pickup", item] -> do
       newState <- pickUpItem item state
       gameLoop newState
