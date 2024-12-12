@@ -31,14 +31,15 @@ data Flags = Flags
 data State = State
   { location :: Location,
     flags :: Flags,
-    inventory :: Inventory -- Ekwipunek
+    inventory :: Inventory, -- Ekwipunek
+    dinamicInteractables :: Interactables -- Interactables that can be changed during the game
   }
 
 --------------------------------------------------------------------------------
 -- CONSTANTS -------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
-start = State {location = garden, flags = Flags {isHallOpen = False, isBirdKilled = False, hasPlayedSlingshot = False, isWindowOpen = False}, inventory = []}
+start = State {location = garden, flags = Flags {isHallOpen = False, isBirdKilled = False, hasPlayedSlingshot = False, isWindowOpen = False}, inventory = [], dinamicInteractables = []}
 
 --------------------------------------------------------------------------------
 -- lokalizacje -----------------------------------------------------------------
@@ -111,7 +112,8 @@ glasshouse =
           ++ "The air is thick with decay,\n"
           ++ "and the silence feels suffocating, broken only\n"
           ++ "by the creaking of the hanging bones.",
-      interactables = ["slingshot"],
+      -- interactables = ["slingshot"], NOTE: It cannot be staticly here because there is a stage of the game where it disappears
+      interactables = [],
       items = [],
       north = Nothing,
       south = Nothing,
@@ -420,6 +422,25 @@ lab =
 -- FUNKCJE ---------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
+updateDynamicInteractables :: State -> State
+updateDynamicInteractables state
+  -- \| isHallOpen (flags state) && not ("open_door" `elem` dinamicInteractables state) =
+  --     state {dinamicInteractables = "open_door" : dinamicInteractables state}
+  -- \| isBirdKilled (flags state) && not ("bird_corpse" `elem` dinamicInteractables state) =
+  --     state {dinamicInteractables = "bird_corpse" : dinamicInteractables state}
+  | name (location state) == "Glasshouse"
+      && not (hasPlayedSlingshot (flags state))
+      && not ("slingshot" `elem` dinamicInteractables state) =
+      state {dinamicInteractables = "slingshot" : dinamicInteractables state}
+  -- \| hasPlayedSlingshot (flags state)
+  --     && "slingshot" `elem` dinamicInteractables state =
+  --     state {dinamicInteractables = filter (/= "slingshot") (dinamicInteractables state)}
+  -- \| hasPlayedSlingshot (flags state) && not ("slingshot_target" `elem` dinamicInteractables state) =
+  --     state {dinamicInteractables = "slingshot_target" : dinamicInteractables state}
+  -- \| isWindowOpen (flags state) && not ("open_window" `elem` dinamicInteractables state) =
+  --     state {dinamicInteractables = "open_window" : dinamicInteractables state}
+  | otherwise = state
+
 -- Funkcja sprawdzająca, czy gracz może przejść w danym kierunku
 canMove :: State -> Char -> Bool
 canMove state direction
@@ -438,7 +459,10 @@ move state direction =
             'e' -> fromMaybe (location state) (east (location state))
             'w' -> fromMaybe (location state) (west (location state))
             _ -> location state
-      return state {location = newLoc}
+      let state1 = state {location = newLoc}
+      let updatedState = updateDynamicInteractables state1
+
+      return updatedState -- {location = newLoc}
     else do
       putStrLn "You need the golden key to go north from the Garden!"
       return state
@@ -470,7 +494,7 @@ displayLocation loc = putStrLn $ description loc
 interactWith :: String -> State -> IO State
 interactWith "slingshot" state =
   let loc = location state
-   in if "slingshot" `elem` interactables loc
+   in if "slingshot" `elem` dinamicInteractables state
         then
           if hasPlayedSlingshot (flags state)
             then do
@@ -478,8 +502,9 @@ interactWith "slingshot" state =
               return state
             else do
               newState <- playGuessingGame state
-              let newLoc = (location newState) {interactables = filter (/= "slingshot") (interactables (location newState))}
-              return newState {location = newLoc}
+              let newStateWithoutSlingshot = newState {dinamicInteractables = filter (/= "slingshot") (dinamicInteractables newState)}
+
+              return newStateWithoutSlingshot
         else do
           putStrLn "There is no slingshot here to interact with."
           return state
@@ -842,8 +867,10 @@ gameLoop state = do
   displayLocation loc
   putStrLn ""
 
-  let inter = interactables loc
-  displayInteractables inter
+  let interLoc = interactables loc
+  let interState = dinamicInteractables state
+  let combined = interLoc ++ interState
+  displayInteractables combined
   putStrLn ""
 
   let itemsHere = items loc
