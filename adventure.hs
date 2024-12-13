@@ -27,8 +27,8 @@ data Location = Location
 data Flags = Flags
   { isHallOpen :: Bool,
     isBirdKilled :: Bool,
+    isGoldenKeyTaken :: Bool,
     isTorchLit :: Bool,
-    isUnlitTorchPicked :: Bool,
     isGeneratorOn :: Bool,
     hasPlayedSlingshot :: Bool, -- Flaga oznaczająca, czy minigra została już rozegrana
     isWindowOpen :: Bool -- Flaga oznaczająca stan okna
@@ -53,9 +53,9 @@ start =
           { isTorchLit = False,
             isGeneratorOn = False,
             isHallOpen = False,
+            isGoldenKeyTaken = False,
             isBirdKilled = False,
             hasPlayedSlingshot = False,
-            isUnlitTorchPicked = False,
             isWindowOpen = False
           },
       inventory = [],
@@ -111,7 +111,7 @@ hall =
           ++ "are being watched from the shadows is impossible to shake.\n",
       interactables = [],
       items = [],
-      north = Just low_security_prison,
+      north = Just lowSecurityPrison,
       south = Just garden,
       east = Just banquetHall,
       west = Just library
@@ -212,8 +212,8 @@ closet =
       west = Just banquetHall
     }
 
-low_security_prison :: Location
-low_security_prison =
+lowSecurityPrison :: Location
+lowSecurityPrison =
   Location
     { name = "Low Security Prison",
       description =
@@ -227,14 +227,14 @@ low_security_prison =
           ++ "makes the space feel even more confining.\n",
       interactables = [],
       items = [],
-      north = Just medium_security_prison,
+      north = Just mediumSecurityPrison,
       south = Just hall, -- Can go back to the hall
-      east = Just lust_cell,
-      west = Just gluttony_cell
+      east = Just lustCell,
+      west = Just gluttonyCell
     }
 
-gluttony_cell :: Location
-gluttony_cell =
+gluttonyCell :: Location
+gluttonyCell =
   Location
     { name = "Gluttony Cell",
       description =
@@ -250,14 +250,14 @@ gluttony_cell =
           ++ "of gluttony’s punishment.\n",
       interactables = ["rotting_food", "dirty_floor", "chest"],
       items = [],
-      east = Just low_security_prison, -- Can go back to low_security_prison
-      west = Nothing, -- No further west
+      east = Just lowSecurityPrison,
+      west = Nothing,
       north = Nothing,
       south = Nothing
     }
 
-lust_cell :: Location
-lust_cell =
+lustCell :: Location
+lustCell =
   Location
     { name = "Lust Cell",
       description =
@@ -275,14 +275,14 @@ lust_cell =
           ++ "while this magnet is powered on.\n",
       interactables = ["magnet", "tapestry", "broken_mirrors"],
       items = [],
-      west = Just low_security_prison, -- Can go back to low_security_prison
-      east = Nothing, -- No further east
+      west = Just lowSecurityPrison,
+      east = Nothing,
       north = Nothing,
       south = Nothing
     }
 
-medium_security_prison :: Location
-medium_security_prison =
+mediumSecurityPrison :: Location
+mediumSecurityPrison =
   Location
     { name = "Medium Security Prison",
       description =
@@ -296,14 +296,14 @@ medium_security_prison =
           ++ "giving the room a heavy, oppressive feeling.\n",
       interactables = [],
       items = [],
-      north = Just high_security_prison,
-      south = Just low_security_prison, -- Link back to low_security_prison
-      east = Just sloth_cell,
-      west = Just envy_cell
+      north = Just highSecurityPrison,
+      south = Just lowSecurityPrison,
+      east = Just slothCell,
+      west = Just envyCell
     }
 
-envy_cell :: Location
-envy_cell =
+envyCell :: Location
+envyCell =
   Location
     { name = "Envy Cell",
       description =
@@ -320,12 +320,12 @@ envy_cell =
       items = [],
       north = Nothing,
       south = Nothing,
-      east = Just medium_security_prison, -- Link back to medium_security_prison
-      west = Nothing -- No further west
+      east = Just mediumSecurityPrison,
+      west = Nothing
     }
 
-sloth_cell :: Location
-sloth_cell =
+slothCell :: Location
+slothCell =
   Location
     { name = "Sloth Cell",
       description =
@@ -341,11 +341,11 @@ sloth_cell =
       north = Nothing,
       south = Nothing,
       east = Nothing,
-      west = Just medium_security_prison -- Link back to medium_security_prison
+      west = Just mediumSecurityPrison
     }
 
-high_security_prison :: Location
-high_security_prison =
+highSecurityPrison :: Location
+highSecurityPrison =
   Location
     { name = "High Security Prison",
       description =
@@ -364,13 +364,13 @@ high_security_prison =
       interactables = [],
       items = [],
       north = Just lab,
-      south = Just medium_security_prison, -- Link back to medium_security_prison
-      east = Just wrath_cell,
-      west = Just generator_room
+      south = Just mediumSecurityPrison,
+      east = Just wrathCell,
+      west = Just generatorRoom
     }
 
-generator_room :: Location
-generator_room =
+generatorRoom :: Location
+generatorRoom =
   Location
     { name = "Generator Room",
       description =
@@ -385,12 +385,12 @@ generator_room =
       items = [],
       north = Nothing,
       south = Nothing,
-      east = Just high_security_prison, -- Link back to high_security_prison
+      east = Just highSecurityPrison, -- Link back to high_security_prison
       west = Nothing
     }
 
-wrath_cell :: Location
-wrath_cell =
+wrathCell :: Location
+wrathCell =
   Location
     { name = "Wrath Cell",
       description =
@@ -410,7 +410,7 @@ wrath_cell =
       north = Nothing,
       south = Nothing,
       east = Nothing,
-      west = Just high_security_prison -- Link back to high_security_prison
+      west = Just highSecurityPrison
     }
 
 lab :: Location
@@ -449,7 +449,7 @@ updateDynamicLocation :: State -> State
 updateDynamicLocation state
   | name (location state) == "Laboratory"
       && not (isBirdKilled (flags state))
-      && not ("a1sl3" `elem` dinamicInteractables state)
+      && notElem "a1sl3" (dinamicInteractables state)
       && not (descriptionContainsBird (location state)) =
       let loc = location state
           newDescription =
@@ -464,17 +464,29 @@ updateDynamicInteractables :: State -> State
 updateDynamicInteractables state
   | name (location state) == "Glasshouse"
       && not (hasPlayedSlingshot (flags state))
-      && not ("slingshot" `elem` dinamicInteractables state) =
+      && notElem "slingshot" (dinamicInteractables state) =
       state {dinamicInteractables = "slingshot" : dinamicInteractables state}
-  | otherwise = state
+  | name (location state) == "Glasshouse"
+      && not (hasPlayedSlingshot (flags state)) =
+      state
+  | otherwise =
+      state {dinamicInteractables = filter (/= "slingshot") (dinamicInteractables state)}
 
 updateDynamicPickables :: State -> State
 updateDynamicPickables state
   | name (location state) == "Sloth Cell"
-      && not ("unlit_torch" `elem` inventory state)
-      && not ("unlit_torch" `elem` items (location state)) = do
+      && notElem "unlit_torch" (inventory state)
+      && notElem "unlit_torch" (items (location state)) = do
       let loc = location state
           newLoc = loc {items = "unlit_torch" : items loc}
+       in state {location = newLoc}
+  | name (location state) == "Glasshouse"
+      && notElem "golden_key" (inventory state)
+      && notElem "golden_key" (items (location state))
+      && hasPlayedSlingshot (flags state)
+      && not (isGoldenKeyTaken (flags state)) = do
+      let loc = location state
+          newLoc = loc {items = "golden_key" : items loc}
        in state {location = newLoc}
   | otherwise = state
 
@@ -515,8 +527,12 @@ printLines xs = putStr (unlines xs)
 readCommand :: IO String
 readCommand = do
   putStr "> "
-  xs <- getLine
-  return xs
+  getLine
+
+-- readCommand = do
+--   putStr "> "
+--   xs <- getLine
+--   return xs
 
 displayInteractables :: Interactables -> IO ()
 displayInteractables xs = putStr (unlines ("Interactables here:" : xs))
@@ -870,10 +886,16 @@ pickUpItem item state =
   if item `elem` items (location state)
     then do
       putStrLn $ "You picked up " ++ item ++ "."
+
+      let newFlags =
+            if item == "golden_key"
+              then (flags state) {isGoldenKeyTaken = True}
+              else flags state
+
       let newItems = filter (/= item) (items (location state))
       let newLoc = (location state) {items = newItems}
       let newInv = item : inventory state
-      return state {location = newLoc, inventory = newInv}
+      return state {location = newLoc, inventory = newInv, flags = newFlags}
     else do
       putStrLn "This item is not here."
       return state
