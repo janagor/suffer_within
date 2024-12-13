@@ -11,6 +11,8 @@ type Inventory = [String]
 
 type Interactables = [String]
 
+type Pickables = [String]
+
 data Location = Location
   { name :: String,
     description :: String,
@@ -25,6 +27,8 @@ data Location = Location
 data Flags = Flags
   { isHallOpen :: Bool,
     isBirdKilled :: Bool,
+    isTorchLit :: Bool,
+    isUnlitTorchPicked :: Bool,
     isGeneratorOn :: Bool,
     hasPlayedSlingshot :: Bool, -- Flaga oznaczająca, czy minigra została już rozegrana
     isWindowOpen :: Bool -- Flaga oznaczająca stan okna
@@ -34,14 +38,29 @@ data State = State
   { location :: Location,
     flags :: Flags,
     inventory :: Inventory, -- Ekwipunek
-    dinamicInteractables :: Interactables -- Interactables that can be changed during the game
+    dinamicInteractables :: Interactables
   }
 
 --------------------------------------------------------------------------------
 -- CONSTANTS -------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
-start = State {location = garden, flags = Flags {isGeneratorOn = False, isHallOpen = False, isBirdKilled = False, hasPlayedSlingshot = False, isWindowOpen = False}, inventory = [], dinamicInteractables = []}
+start =
+  State
+    { location = garden,
+      flags =
+        Flags
+          { isTorchLit = False,
+            isGeneratorOn = False,
+            isHallOpen = False,
+            isBirdKilled = False,
+            hasPlayedSlingshot = False,
+            isUnlitTorchPicked = False,
+            isWindowOpen = False
+          },
+      inventory = [],
+      dinamicInteractables = []
+    }
 
 --------------------------------------------------------------------------------
 -- lokalizacje -----------------------------------------------------------------
@@ -317,7 +336,8 @@ sloth_cell =
           ++ "lights the space, and the air is stale, untouched by\n"
           ++ "effort or care.\n",
       interactables = ["paper", "written_paper"],
-      items = ["unlit_torch"],
+      -- items = ["unlit_torch"],
+      items = [],
       north = Nothing,
       south = Nothing,
       east = Nothing,
@@ -442,21 +462,20 @@ updateDynamicLocation state
 
 updateDynamicInteractables :: State -> State
 updateDynamicInteractables state
-  -- \| isHallOpen (flags state) && not ("open_door" `elem` dinamicInteractables state) =
-  --     state {dinamicInteractables = "open_door" : dinamicInteractables state}
-  -- \| isBirdKilled (flags state) && not ("bird_corpse" `elem` dinamicInteractables state) =
-  --     state {dinamicInteractables = "bird_corpse" : dinamicInteractables state}
   | name (location state) == "Glasshouse"
       && not (hasPlayedSlingshot (flags state))
       && not ("slingshot" `elem` dinamicInteractables state) =
       state {dinamicInteractables = "slingshot" : dinamicInteractables state}
-  -- \| hasPlayedSlingshot (flags state)
-  --     && "slingshot" `elem` dinamicInteractables state =
-  --     state {dinamicInteractables = filter (/= "slingshot") (dinamicInteractables state)}
-  -- \| hasPlayedSlingshot (flags state) && not ("slingshot_target" `elem` dinamicInteractables state) =
-  --     state {dinamicInteractables = "slingshot_target" : dinamicInteractables state}
-  -- \| isWindowOpen (flags state) && not ("open_window" `elem` dinamicInteractables state) =
-  --     state {dinamicInteractables = "open_window" : dinamicInteractables state}
+  | otherwise = state
+
+updateDynamicPickables :: State -> State
+updateDynamicPickables state
+  | name (location state) == "Sloth Cell"
+      && not ("unlit_torch" `elem` inventory state)
+      && not ("unlit_torch" `elem` items (location state)) = do
+      let loc = location state
+          newLoc = loc {items = "unlit_torch" : items loc}
+       in state {location = newLoc}
   | otherwise = state
 
 -- Funkcja sprawdzająca, czy gracz może przejść w danym kierunku
@@ -464,6 +483,8 @@ canMove :: State -> Char -> Bool
 canMove state direction
   | name (location state) == "Garden" && direction == 'n' =
       "golden_key" `elem` inventory state
+  | name (location state) == "Generator Room" && direction == 'e' =
+      isGeneratorOn (flags state)
   | otherwise = True
 
 -- Funkcja do zmiany pokoju na podstawie kierunku z uwzględnieniem ograniczeń
@@ -478,7 +499,8 @@ move state direction =
             'w' -> fromMaybe (location state) (west (location state))
             _ -> location state
       let state1 = state {location = newLoc}
-      let updatedStateDynamic = updateDynamicInteractables state1
+      let updatedPickables = updateDynamicPickables state1
+      let updatedStateDynamic = updateDynamicInteractables updatedPickables
       let updatedState = updateDynamicLocation updatedStateDynamic
 
       return updatedState -- {location = newLoc}
