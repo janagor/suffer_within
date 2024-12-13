@@ -25,6 +25,7 @@ data Location = Location
 data Flags = Flags
   { isHallOpen :: Bool,
     isBirdKilled :: Bool,
+    isGeneratorOn :: Bool,
     hasPlayedSlingshot :: Bool, -- Flaga oznaczająca, czy minigra została już rozegrana
     isWindowOpen :: Bool -- Flaga oznaczająca stan okna
   }
@@ -40,7 +41,7 @@ data State = State
 -- CONSTANTS -------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
-start = State {location = garden, flags = Flags {isHallOpen = False, isBirdKilled = False, hasPlayedSlingshot = False, isWindowOpen = False}, inventory = [], dinamicInteractables = []}
+start = State {location = garden, flags = Flags {isGeneratorOn = False, isHallOpen = False, isBirdKilled = False, hasPlayedSlingshot = False, isWindowOpen = False}, inventory = [], dinamicInteractables = []}
 
 --------------------------------------------------------------------------------
 -- lokalizacje -----------------------------------------------------------------
@@ -760,6 +761,19 @@ interactWith "chain" state =
         else do
           putStrLn "There is no chain here to interact with."
           return state
+interactWith "generator" state =
+  let loc = location state
+   in if "generator" `elem` interactables loc
+        then do
+          let generatorState = isGeneratorOn (flags state)
+          if generatorState
+            then putStrLn "Power off."
+            else putStrLn "Power on."
+          let updatedFlags = (flags state) {isGeneratorOn = not generatorState}
+          return state {flags = updatedFlags}
+        else do
+          putStrLn "There is no generator here to interact with."
+          return state
 interactWith "chair" state =
   let loc = location state
    in if "chair" `elem` interactables loc
@@ -845,7 +859,9 @@ pickUpItem item state =
 -- Minigierka zgadywania liczby
 playGuessingGame :: State -> IO State
 playGuessingGame state = do
-  target <- randomRIO (0, 90) -- Losowanie liczby
+  -- TODO: For debuging it is 1
+  -- target <- randomRIO (0, 90) -- Losowanie liczby
+  target <- randomRIO (0, 1) -- Losowanie liczby
   putStrLn "Welcome to the slingshot game! Guess a number between 0 and 90."
   guessingLoop target 0 state
 
