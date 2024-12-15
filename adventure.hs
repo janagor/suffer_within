@@ -31,6 +31,7 @@ data Flags = Flags
     isCrystalBallBroken :: Bool,
     isLaboratoryOpen :: Bool,
     isPrisonOpen :: Bool,
+    hasPlayedNumberPair :: Bool,
     isRune2Taken :: Bool,
     isTorchLit :: Bool,
     isGeneratorOn :: Bool,
@@ -61,6 +62,7 @@ start =
             isLaboratoryOpen = False,
             isCrystalBallBroken = False,
             isRune2Taken = False,
+            hasPlayedNumberPair = False,
             isPrisonOpen = False,
             isBirdKilled = False,
             hasPlayedSlingshot = False,
@@ -168,7 +170,7 @@ library =
           ++ "between the bookshelves. The room feels heavy with\n"
           ++ "unspoken secrets, as if the books themselves are\n"
           ++ "hiding dark stories waiting to be uncovered.",
-      interactables = ["piece_of_paper", "window", "book"],
+      interactables = ["piece_of_paper", "window"],
       items = [],
       north = Nothing,
       south = Nothing,
@@ -487,8 +489,15 @@ updateDynamicInteractables state
   | name (location state) == "Closet"
       && not (isCrystalBallBroken (flags state)) =
       state
+  | name (location state) == "Library"
+      && not (hasPlayedNumberPair (flags state))
+      && notElem "book" (dinamicInteractables state) =
+      state {dinamicInteractables = "book" : dinamicInteractables state}
+  | name (location state) == "Library"
+      && not (hasPlayedNumberPair (flags state)) =
+      state
   | otherwise =
-      state {dinamicInteractables = filter (\x -> x /= "slingshot" && x /= "crystal_ball") (dinamicInteractables state)}
+      state {dinamicInteractables = filter (\x -> x /= "slingshot" && x /= "crystal_ball" && x /= "book") (dinamicInteractables state)}
 
 updateDynamicPickables :: State -> State
 updateDynamicPickables state
@@ -514,6 +523,13 @@ updateDynamicPickables state
       && not (isGoldenKeyTaken (flags state)) = do
       let loc = location state
           newLoc = loc {items = "golden_key" : items loc}
+       in state {location = newLoc}
+  | name (location state) == "Library"
+      && notElem "rune1" (inventory state)
+      && notElem "rune1" (items (location state))
+      && hasPlayedNumberPair (flags state) = do
+      let loc = location state
+          newLoc = loc {items = "rune1" : items loc}
        in state {location = newLoc}
   | name (location state) == "Lust Cell"
       && notElem "magnetic_card" (inventory state)
@@ -605,6 +621,26 @@ interactWith "slingshot" state =
               return newStateWithoutSlingshot
         else do
           putStrLn "There is no slingshot here to interact with."
+          return state
+interactWith "book" state =
+  let loc = location state
+   in if "book" `elem` dinamicInteractables state
+        then
+          if hasPlayedNumberPair (flags state)
+            then do
+              putStrLn "You have already played the book game."
+              return state
+            else do
+              newState <- playNumberPairGame state
+              let newStateWithoutBook =
+                    newState
+                      { dinamicInteractables =
+                          filter (/= "book") (dinamicInteractables newState)
+                      }
+
+              return newStateWithoutBook
+        else do
+          putStrLn "There is no book here to interact with."
           return state
 interactWith "piece_of_paper" state =
   let loc = location state
@@ -952,6 +988,37 @@ pickUpItem item state =
     else do
       putStrLn "This item is not here."
       return state
+
+-- Minigierka: Odgadnij dwie liczby
+playNumberPairGame :: State -> IO State
+playNumberPairGame state = do
+  putStrLn "Welcome to the book game! Enter two numbers to win."
+  numberPairLoop state
+
+numberPairLoop :: State -> IO State
+numberPairLoop state = do
+  putStrLn "Enter two numbers separated by a space: "
+  input <- getLine
+  let numbers = words input
+  if length numbers == 2
+    then do
+      let first = read (head numbers) :: Int
+      let second = read (numbers !! 1) :: Int
+      if first == 89 && second == 144
+        then do
+          putStrLn "Congratulations! You guessed the correct numbers!"
+          let newLoc =
+                if name (location state) == "Library"
+                  then (location state) {items = "rune1" : items (location state)}
+                  else location state
+          let newFlags = (flags state) {hasPlayedNumberPair = True}
+          return state {location = newLoc, flags = newFlags}
+        else do
+          putStrLn "Wrong numbers. Try again!"
+          numberPairLoop state
+    else do
+      putStrLn "Invalid input. Please enter exactly two numbers separated by a space."
+      numberPairLoop state
 
 -- Minigierka zgadywania liczby
 playGuessingGame :: State -> IO State
