@@ -35,8 +35,8 @@ data Flags = Flags
     isRune2Taken :: Bool,
     isTorchLit :: Bool,
     isGeneratorOn :: Bool,
-    hasPlayedSlingshot :: Bool, -- Flaga oznaczająca, czy minigra została już rozegrana
-    isWindowOpen :: Bool -- Flaga oznaczająca stan okna
+    hasPlayedSlingshot :: Bool,
+    isWindowOpen :: Bool
   }
 
 data State = State
@@ -143,7 +143,6 @@ glasshouse =
           ++ "The air is thick with decay,\n"
           ++ "and the silence feels suffocating, broken only\n"
           ++ "by the creaking of the hanging bones.",
-      -- interactables = ["slingshot"], NOTE: It cannot be staticly here because there is a stage of the game where it disappears
       interactables = [],
       items = [],
       north = Nothing,
@@ -395,7 +394,7 @@ generatorRoom =
       items = [],
       north = Nothing,
       south = Nothing,
-      east = Just highSecurityPrison, -- Link back to high_security_prison
+      east = Just highSecurityPrison,
       west = Nothing
     }
 
@@ -443,7 +442,7 @@ lab =
       interactables = ["r1tual", "h3lp"],
       items = [],
       north = Nothing,
-      south = Nothing, -- No way back to high_security_prison
+      south = Nothing,
       east = Nothing,
       west = Nothing
     }
@@ -451,6 +450,7 @@ lab =
 --------------------------------------------------------------------------------
 -- FUNKCJE ---------------------------------------------------------------------
 --------------------------------------------------------------------------------
+
 descriptionContainsBird :: Location -> Bool
 descriptionContainsBird loc =
   "You notice a chirping bird" `isInfixOf` description loc
@@ -571,12 +571,11 @@ move state direction =
       let updatedStateDynamic = updateDynamicInteractables updatedPickables
       let updatedState = updateDynamicLocation updatedStateDynamic
 
-      return updatedState -- {location = newLoc}
+      return updatedState
     else do
-      putStrLn "You need the golden key to go north from the Garden!"
+      putStrLn "You cannot get there yet. But there has to be a way..."
       return state
 
--- print strings from list in separate lines
 printLines :: [String] -> IO ()
 printLines xs = putStr (unlines xs)
 
@@ -584,11 +583,6 @@ readCommand :: IO String
 readCommand = do
   putStr "> "
   getLine
-
--- readCommand = do
---   putStr "> "
---   xs <- getLine
---   return xs
 
 displayInteractables :: Interactables -> IO ()
 displayInteractables xs = putStr (unlines ("Interactables here:" : xs))
@@ -599,11 +593,9 @@ displayItems xs = putStr (unlines ("Items here:" : xs))
 displayInventory :: Inventory -> IO ()
 displayInventory xs = putStr (unlines ("Inventory:" : xs))
 
--- Wyświetlanie obecnej lokalizacji
 displayLocation :: Location -> IO ()
 displayLocation loc = putStrLn $ description loc
 
--- Obsługa interakcji
 interactWith :: String -> State -> IO State
 interactWith "slingshot" state =
   let loc = location state
@@ -995,7 +987,9 @@ pickUpItem item state =
 -- Minigierka: Odgadnij dwie liczby
 playNumberPairGame :: State -> IO State
 playNumberPairGame state = do
-  putStrLn "Welcome to the book game! Enter two numbers to win."
+  putStrLn "There are a lot of books in the library."
+  putStrLn "They are indexed with two numbers: row and column from 0 to 200."
+  putStrLn "You can search any of them."
   numberPairLoop state
 
 numberPairLoop :: State -> IO State
@@ -1026,8 +1020,8 @@ numberPairLoop state = do
 playGuessingGame :: State -> IO State
 playGuessingGame state = do
   -- TODO: For debuging it is 1
-  target <- randomRIO (0, 90)
-  -- target <- randomRIO (0, 1)
+  -- target <- randomRIO (0, 90)
+  target <- randomRIO (0, 1)
   putStrLn "Welcome to the slingshot game! Guess a number between 0 and 90."
   guessingLoop target 0 state
 
@@ -1060,7 +1054,10 @@ guessingLoop target attempts state = do
               return state {location = newLoc, flags = updatedFlags}
             else return state {location = newLoc, flags = newFlags}
 
--- Pętla gry
+--------------------------------------------------------------------------------
+-- GAME_LOOP -------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
 gameLoop :: State -> IO ()
 gameLoop state = do
   putStrLn "--------------------------------------------------"
@@ -1099,6 +1096,10 @@ gameLoop state = do
     _ -> do
       putStrLn "Invalid command."
       gameLoop state
+
+--------------------------------------------------------------------------------
+-- MAIN ------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 main = do
   gameLoop start
