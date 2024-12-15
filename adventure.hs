@@ -545,6 +545,9 @@ canMove :: State -> Char -> Bool
 canMove state direction
   | name (location state) == "Garden" && direction == 'n' =
       "golden_key" `elem` inventory state
+  | name (location state) == "Hall" && direction == 'n' =
+      "rune1" `elem` inventory state
+        && "rune2" `elem` inventory state
   | name (location state) == "High Security Prison" && direction == 'n' =
       "magnetic_card" `elem` inventory state
   | name (location state) == "Generator Room" && direction == 'e' =
@@ -1020,12 +1023,11 @@ numberPairLoop state = do
       putStrLn "Invalid input. Please enter exactly two numbers separated by a space."
       numberPairLoop state
 
--- Minigierka zgadywania liczby
 playGuessingGame :: State -> IO State
 playGuessingGame state = do
   -- TODO: For debuging it is 1
-  -- target <- randomRIO (0, 90) -- Losowanie liczby
-  target <- randomRIO (0, 1) -- Losowanie liczby
+  target <- randomRIO (0, 90)
+  -- target <- randomRIO (0, 1)
   putStrLn "Welcome to the slingshot game! Guess a number between 0 and 90."
   guessingLoop target 0 state
 
