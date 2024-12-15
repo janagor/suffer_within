@@ -28,6 +28,8 @@ data Flags = Flags
   { isHallOpen :: Bool,
     isBirdKilled :: Bool,
     isGoldenKeyTaken :: Bool,
+    isLaboratoryOpen :: Bool,
+    isPrisonOpen :: Bool,
     isTorchLit :: Bool,
     isGeneratorOn :: Bool,
     hasPlayedSlingshot :: Bool, -- Flaga oznaczająca, czy minigra została już rozegrana
@@ -51,9 +53,11 @@ start =
       flags =
         Flags
           { isTorchLit = False,
-            isGeneratorOn = False,
+            isGeneratorOn = True,
             isHallOpen = False,
             isGoldenKeyTaken = False,
+            isLaboratoryOpen = False,
+            isPrisonOpen = False,
             isBirdKilled = False,
             hasPlayedSlingshot = False,
             isWindowOpen = False
@@ -457,7 +461,10 @@ updateDynamicLocation state
               ++ "3. You noticed a chirping bird that flew out through a hole in the wall.\n"
               ++ "You decide to escape through it too.\n"
           updatedLocation = loc {description = newDescription}
-       in state {location = updatedLocation, dinamicInteractables = "a1sl3" : dinamicInteractables state}
+       in state
+            { location = updatedLocation,
+              dinamicInteractables = "a1sl3" : dinamicInteractables state
+            }
   | otherwise = state
 
 updateDynamicInteractables :: State -> State
@@ -476,6 +483,7 @@ updateDynamicPickables :: State -> State
 updateDynamicPickables state
   | name (location state) == "Sloth Cell"
       && notElem "unlit_torch" (inventory state)
+      && notElem "lit_torch" (inventory state)
       && notElem "unlit_torch" (items (location state)) = do
       let loc = location state
           newLoc = loc {items = "unlit_torch" : items loc}
@@ -488,6 +496,13 @@ updateDynamicPickables state
       let loc = location state
           newLoc = loc {items = "golden_key" : items loc}
        in state {location = newLoc}
+  | name (location state) == "Lust Cell"
+      && notElem "magnetic_card" (inventory state)
+      && notElem "magnetic_card" (items (location state))
+      && not (isGeneratorOn (flags state)) = do
+      let loc = location state
+          newLoc = loc {items = "magnetic_card" : items loc}
+       in state {location = newLoc}
   | otherwise = state
 
 -- Funkcja sprawdzająca, czy gracz może przejść w danym kierunku
@@ -495,8 +510,11 @@ canMove :: State -> Char -> Bool
 canMove state direction
   | name (location state) == "Garden" && direction == 'n' =
       "golden_key" `elem` inventory state
+  | name (location state) == "High Security Prison" && direction == 'n' =
+      "magnetic_card" `elem` inventory state
   | name (location state) == "Generator Room" && direction == 'e' =
       isGeneratorOn (flags state)
+        || "lit_torch" `elem` inventory state
   | otherwise = True
 
 -- Funkcja do zmiany pokoju na podstawie kierunku z uwzględnieniem ograniczeń
@@ -559,7 +577,11 @@ interactWith "slingshot" state =
               return state
             else do
               newState <- playGuessingGame state
-              let newStateWithoutSlingshot = newState {dinamicInteractables = filter (/= "slingshot") (dinamicInteractables newState)}
+              let newStateWithoutSlingshot =
+                    newState
+                      { dinamicInteractables =
+                          filter (/= "slingshot") (dinamicInteractables newState)
+                      }
 
               return newStateWithoutSlingshot
         else do
@@ -780,10 +802,15 @@ interactWith "lit_torch" state =
   let loc = location state
    in if "lit_torch" `elem` interactables loc
         then do
-          putStrLn "The torch is burning but fixed to the wall."
-          putStrLn "You could definitely use it to set something on fire."
-
-          return state
+          let itemsList = inventory state
+          if "unlit_torch" `elem` itemsList
+            then do
+              putStrLn "You take the unlit torch from your inventory and light it up."
+              return state {inventory = "lit_torch" : filter (/= "unlit_torch") itemsList}
+            else do
+              putStrLn "The torch is burning but fixed to the wall."
+              putStrLn "You could definitely use it to set something on fire."
+              return state
         else do
           putStrLn "There is no lit_torch here to interact with."
           return state
