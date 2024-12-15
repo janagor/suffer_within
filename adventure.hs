@@ -28,8 +28,10 @@ data Flags = Flags
   { isHallOpen :: Bool,
     isBirdKilled :: Bool,
     isGoldenKeyTaken :: Bool,
+    isCrystalBallBroken :: Bool,
     isLaboratoryOpen :: Bool,
     isPrisonOpen :: Bool,
+    isRune2Taken :: Bool,
     isTorchLit :: Bool,
     isGeneratorOn :: Bool,
     hasPlayedSlingshot :: Bool, -- Flaga oznaczająca, czy minigra została już rozegrana
@@ -57,6 +59,8 @@ start =
             isHallOpen = False,
             isGoldenKeyTaken = False,
             isLaboratoryOpen = False,
+            isCrystalBallBroken = False,
+            isRune2Taken = False,
             isPrisonOpen = False,
             isBirdKilled = False,
             hasPlayedSlingshot = False,
@@ -208,7 +212,7 @@ closet =
           ++ "Faint wisps of mist swirl within, occasionally forming shapes as if something is trying to escape.\n"
           ++ "The air smells of dampness and mildew, and the darkness seems to swallow every corner.\n"
           ++ "The place holds more secrets than it lets on, hidden beneath layers of dust and shadow.",
-      interactables = ["crystal_ball", "floor"],
+      interactables = ["floor"],
       items = [],
       north = Nothing,
       south = Nothing,
@@ -476,11 +480,26 @@ updateDynamicInteractables state
   | name (location state) == "Glasshouse"
       && not (hasPlayedSlingshot (flags state)) =
       state
+  | name (location state) == "Closet"
+      && not (isCrystalBallBroken (flags state))
+      && notElem "crystal_ball" (dinamicInteractables state) =
+      state {dinamicInteractables = "crystal_ball" : dinamicInteractables state}
+  | name (location state) == "Closet"
+      && not (isCrystalBallBroken (flags state)) =
+      state
   | otherwise =
-      state {dinamicInteractables = filter (/= "slingshot") (dinamicInteractables state)}
+      state {dinamicInteractables = filter (\x -> x /= "slingshot" && x /= "crystal_ball") (dinamicInteractables state)}
 
 updateDynamicPickables :: State -> State
 updateDynamicPickables state
+  | name (location state) == "Closet"
+      && notElem "rune2" (inventory state)
+      && notElem "rune2" (items (location state))
+      && isCrystalBallBroken (flags state)
+      && notElem "rune2" (items (location state)) = do
+      let loc = location state
+          newLoc = loc {items = "rune2" : items loc}
+       in state {location = newLoc}
   | name (location state) == "Sloth Cell"
       && notElem "unlit_torch" (inventory state)
       && notElem "lit_torch" (inventory state)
@@ -654,14 +673,21 @@ interactWith "skeletons" state =
           return state
 interactWith "crystal_ball" state =
   let loc = location state
-   in if "crystal_ball" `elem` interactables loc
+   in if "crystal_ball" `elem` dinamicInteractables state
         then do
           putStrLn "You picked up the crystal ball, but it slipped"
           putStrLn "from your hands and fell to the ground, shattering."
           putStrLn "Something strange fell out of it."
           let newItems = "rune2" : items (location state) -- Dodajemy "rune2" do items w lokacji
           let newLoc = (location state) {items = newItems} -- Aktualizujemy lokację
-          return state {location = newLoc}
+          let newFlags = (flags state) {isCrystalBallBroken = True}
+          return
+            state
+              { location = newLoc,
+                flags = newFlags,
+                dinamicInteractables =
+                  filter (/= "crystal_ball") (dinamicInteractables state)
+              }
         else do
           putStrLn "There is no crystal ball here to interact with."
           return state
@@ -994,19 +1020,7 @@ gameLoop state = do
     ["q"] -> putStrLn "Goodbye!"
     ["interact", item] -> do
       newState <- interactWith item state
-      if item == "r1tual"
-        then
-          putStrLn "r1tual"
-        else
-          if item == "a1sl3"
-            then
-              putStrLn "a1sl3"
-            else
-              if item == "h3lp"
-                then
-                  putStrLn "h3lp"
-                else do
-                  gameLoop newState
+      gameLoop newState
     ["pickup", item] -> do
       newState <- pickUpItem item state
       gameLoop newState
