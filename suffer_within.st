@@ -2,17 +2,12 @@ Object subclass: Location [
     | name description interactables items north south east west |
 
 "innit"
-    Location class >> name: aName description: aDescription interactables: anInteractables items: anItems
-        north: aNorth south: aSouth east: anEast west: aWest [
+    Location class >> name: aName description: aDescription interactables: anInteractables items: anItems [
         ^self new
             name: aName;
             description: aDescription;
             interactables: anInteractables;
-            items: anItems;
-            north: aNorth;
-            south: aSouth;
-            east: anEast;
-            west: aWest.
+            items: anItems.
     ]
 
 "setters"
@@ -88,11 +83,7 @@ Object subclass: Game [
               'press against the glass, and a faint smell of earth and decay'
               'drifts out, hinting at something forgotten within.')
               interactables: #()
-              items: #()
-              north:  hall "Requires golden_key"
-              south: nil
-              east:  glasshouse
-              west: nil.
+              items: #().
         hall := Location name: 'Hall'
               description: #(
               'You stand at the entrance of the mansion,'
@@ -110,11 +101,7 @@ Object subclass: Game [
               'The silence is oppressive, and the feeling that you'
               'are being watched from the shadows is impossible to shake.')
               interactables: #()
-              items: #()
-              north:  lowSecurityPrison " Requires rune1 and rune2 to be used"
-              south:  garden
-              east:  banquetHall
-              west:  library.
+              items: #().
         glasshouse := Location name: 'Glasshouse'
               description: #(
               'Shattered glass'
@@ -129,11 +116,7 @@ Object subclass: Game [
               'and the silence feels suffocating, broken only'
               'by the creaking of the hanging bones.')
               interactables: #('slingshot')
-              items: #()
-              north: nil
-              south: nil
-              east: nil
-              west:  garden.
+              items: #().
         library := Location name: 'Library'
               description: #(
               'The library is cold and dim, filled with shelves of'
@@ -149,11 +132,7 @@ Object subclass: Game [
               'unspoken secrets, as if the books themselves are'
               'hiding dark stories waiting to be uncovered.')
               interactables: #('piece_of_paper' 'window' 'book')
-              items: #()
-              north: nil
-              south: nil
-              east:  hall
-              west: nil.
+              items: #().
         banquetHall := Location name: 'Banquet Hall'
               description: #(
               'The banquet hall is vast, filled with the stench of decay.'
@@ -166,11 +145,7 @@ Object subclass: Game [
               'disturbed only by the soft creak of the wooden floor'
               'beneath your feet.')
               interactables: #('painting' 'chandelier' 'skeletons')
-              items: #()
-              north: nil
-              south: nil
-              east:  closet
-              west:  hall.
+              items: #().
         closet := Location name: 'Closet'
               description: #(
               'The closet is cramped and cluttered, filled with shelves of scattered items.'
@@ -181,11 +156,7 @@ Object subclass: Game [
               'The air smells of dampness and mildew, and the darkness seems to swallow every corner.'
               'The place holds more secrets than it lets on, hidden beneath layers of dust and shadow.')
               interactables: #('crystal ball' 'floor')
-              items: #()
-              north: nil
-              south: nil
-              east: nil
-              west:  banquetHall.
+              items: #().
         lowSecurityPrison := Location name: 'Low Security Prison'
               description: #(
               'The room is dimly lit, with two small cells on either'
@@ -196,11 +167,7 @@ Object subclass: Game [
               'echoes through the silence. The oppressive stillness'
               'makes the space feel even more confining.')
               interactables: #()
-              items: #()
-              north:  mediumSecurityPrison
-              south:  hall
-              east:  lustCell
-              west:  gluttonyCell.
+              items: #().
         gluttonyCell := Location name: 'Gluttony Cell'
               description: #(
               'The room reeks of spoiled food and decay. Cracked'
@@ -213,11 +180,7 @@ Object subclass: Game [
               'with the stench of excess and decay, a grim reminder'
               'of gluttony’s punishment.')
               interactables: #('rotting food''floor''chest')
-              items: #()
-              north: nil
-              south: nil
-              east:  lowSecurityPrison
-              west: nil.
+              items: #().
         lustCell := Location name: 'Lust Cell'
               description: #(
               'The room is dim and heavy with the scent of'
@@ -231,11 +194,7 @@ Object subclass: Game [
               'In the corner, there is a magnetic card held by a large electric magnet.'
               'There is no way to take it while this magnet is powered on')
               interactables: #('magnet''tapestry''broken mirrors')
-              items: #()
-              north: nil
-              south: nil
-              east: nil
-              west:  lowSecurityPrison.
+              items: #().
         mediumSecurityPrison := Location name: 'Medium Security Prison'
               description: #(
               'The room is cold, with faded grey stone walls. Two'
@@ -246,11 +205,7 @@ Object subclass: Game [
               'bulb casts eerie shadows across the space,'
               'giving the room a heavy, oppressive feeling.')
               interactables: #()
-              items: #()
-              north:  highSecurityPrison
-              south:  lowSecurityPrison
-              east:  slothCell
-              west:  envyCell.
+              items: #().
         envyCell := Location name: 'Envy Cell'
               description: #(
               'The room is cold and empty, with cracked walls'
@@ -262,11 +217,7 @@ Object subclass: Game [
               'world. The floor is covered in a layer of dust,'
               'untouched, as if no one has ever truly rested here.')
               interactables: #('blanket''notebook')
-              items: #()
-              north: nil
-              south: nil
-              east:  mediumSecurityPrison
-              west: nil.
+              items: #().
         slothCell := Location name: 'Sloth Cell'
               description:  #(
               'The room is dim and neglected, with a sagging'
@@ -275,11 +226,7 @@ Object subclass: Game [
               'lights the space, and the air is stale, untouched by'
               'effort or care.')
               interactables: #('paper''written paper')
-              items: #()
-              north: nil
-              south: nil
-              east: nil
-              west:  mediumSecurityPrison.
+              items: #().
         highSecurityPrison := Location name: 'High Security Prison'
               description: #(
               'The room is stark and oppressive, with an atmosphere'
@@ -294,11 +241,7 @@ Object subclass: Game [
               'of being locked down, impenetrable, and designed'
               'to keep any potential threat contained.')
               interactables: #('doors')
-              items: #()
-              north:  lab " Requires magnetic_card and generator to be on"
-              south:  mediumSecurityPrison
-              east:  wrathCell
-              west:  generatorRoom. " Requires generator to be on or unlit_torch to be used"
+              items: #(). 
         generatorRoom := Location name: 'Generator Room'
               description:  #(
               'The room vibrates with the hum of a massive generator'
@@ -308,11 +251,7 @@ Object subclass: Game [
               'flickering lights cast unsettling shadows, making'
               'the room feel both powerful and dangerous.')
               interactables: #('generator''lit torch')
-              items: #()
-              north: nil
-              south: nil
-              east:  highSecurityPrison
-              west: nil.
+              items: #().
         wrathCell := Location name: 'Wrath Cell'
               description: #(
               'The cell is dark and cramped, with the walls'
@@ -326,11 +265,7 @@ Object subclass: Game [
               'from the ceiling, suggesting past violence, while the'
               'faint smell of sweat and anger lingers in the air.')
               interactables: #('scratches''chain''chair')
-              items: #()
-              north: nil
-              south: nil
-              east: nil
-              west:  highSecurityPrison.
+              items: #().
         lab := Location name: 'Lab'
               description: #(
               'Th3 d00r cl0s3s b3hind y0u...'
@@ -350,13 +285,9 @@ Object subclass: Game [
               ''
               '3. Y0U RUN F0R Y0UR L1F3 THR0UGH TH3 A1SL3')
               interactables: #('r1tual''h3lp''a1sl3')
-              items: #()
-              north: nil
-              south: nil
-              east: nil
-              west: nil.
+              items: #().
         
-        garden    north: hall.
+        garden    north: hall. "Requires golden_key"
         garden    east: glasshouse.
         hall      north:  lowSecurityPrison. " Requires rune1 and rune2 to be used"
         hall      south:  garden.
@@ -407,7 +338,7 @@ Object subclass: Game [
         direction = 'west' ifTrue: [ newLocation := location west ].
 
         newLocation isNil ifTrue: [self printLines: #('You cannot go there.' '')]
-        ifFalse: [location := newLocation.].
+        ifFalse: [location := newLocation. self printLocationDescription: location].
         
         "newLocation isNil ifFalse: [location := newLocation. printLocationDescription location]."
         
