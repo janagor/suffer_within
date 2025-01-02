@@ -40,10 +40,10 @@ Object subclass: Game [
     isHallOpen isBirdKilled isGoldenKeyTaken isCrystalBallBroken isLaboratoryOpen isPrisonOpen 
     hasPlayedNumberPair isRune2Taken isTorchLit isGeneratorOn hasPlayedSlingshot isWindowOpen
     "State:"
-    isGameOver location dinamicInteractables inventory 
+    isGameOver location dinamicInteractables inventory itemMap
     |
 
-    introductionText := #('Enter command (n/s/e/w to move, `interact <item>`, `pickup <item>`, or `q` to quit): ' '' ).
+    introductionText := #('' '' ).
     instructionsText := #('Enter command (n/s/e/w to move, `interact <item>`, `pickup <item>`, or `q` to quit): ' '' ).
  
     Game class >> new [
@@ -155,7 +155,7 @@ Object subclass: Game [
               'Faint wisps of mist swirl within, occasionally forming shapes as if something is trying to escape.'
               'The air smells of dampness and mildew, and the darkness seems to swallow every corner.'
               'The place holds more secrets than it lets on, hidden beneath layers of dust and shadow.')
-              interactables: #('crystal ball' 'floor')
+              interactables: #('floor') "crystall ball?"
               items: #().
         lowSecurityPrison := Location name: 'Low Security Prison'
               description: #(
@@ -225,7 +225,7 @@ Object subclass: Game [
               'papers litter the floor. A cracked lamp barely'
               'lights the space, and the air is stale, untouched by'
               'effort or care.')
-              interactables: #('paper''written paper')
+              interactables: #('paper''written paper') "unlit torch?"
               items: #().
         highSecurityPrison := Location name: 'High Security Prison'
               description: #(
@@ -321,6 +321,126 @@ Object subclass: Game [
         isGameOver := false.
         location := garden.
         
+        "Create a map of item actions"
+        itemMap := Dictionary new.
+    
+        itemMap at: 'slingshot' put: [ self printLines: #('Play'). "Play" ].
+        itemMap at: 'book' put: [ self printLines: #('Play'). "Play" ].
+        itemMap at: 'piece_of_paper' put: [ self printLines: #('I am a sequence where each number grows'
+          '"By adding the two that came before it, it shows'
+          'Find the pair just under 200s crest'
+          '"The penultimate and ultimate in my test'). ].
+        itemMap at: 'window' put: [ 
+            isWindowOpen ifTrue: [
+                self printLines: #('You close the window. It becomes quiet.').
+                isWindowOpen := false
+                ]
+            ifFalse: [
+                self printLines: #('You open the window. You can hear the wind blowing from outside.').
+                isWindowOpen := true
+            ]
+        ].
+        itemMap at: 'painting' put: [ self printLines: #(          'In the painting: A thick fog blankets a dark, twisted forest'
+          'Gnarled trees loom like dark silhouettes, their branches'
+          'reaching out like claws. In the distance, a decaying'
+          'mansion stands, its broken windows resembling'
+          'hollow eyes. The faint glow of a flickering lantern'
+          'casts an eerie light on a narrow, winding path'
+          'leading toward the mansion, swallowed by the thick darkness.'). ].
+        itemMap at: 'chandelier' put: [ self printLines: #('The broken chandelier swings, its shattered crystals casting'
+          'twisted shadows in the dim light – better not walk beneath it.'). ].
+        itemMap at: 'skeletons' put: [ self printLines: #('Decayed skeletons are scattered around. Some sit in chairs,'
+          'others lie on the floor, their bones twisted and lifeless.'
+          'Flickering light casts eerie shadows on their empty eye sockets.'). ].
+        itemMap at: 'crystal_ball' put: [ self printLines: #(          'You picked up the crystal ball, but it slipped'
+          'from your hands and fell to the ground, shattering.'
+          'Something strange fell out of it.'). 
+          "Crystal ball update"].
+        itemMap at: 'floor' put: [ self printLines: #('There is such a mess in here...'). ].
+        itemMap at: 'rotting_food' put: [ self printLines: #('A lot of stinky, fat, rotting food. It smells horribly...'). ].
+        itemMap at: 'dirty_floor' put: [ self printLines: #('Floor is really sticky. Somebody spilled a lot of wine in there.'). ].
+        itemMap at: 'chest' put: [ self printLines: #('A chest full of bones and some kind of meat. I hope'
+          'its not a human...'). ].
+        itemMap at: 'magnet' put: [ self printLines: #('Such a strong magnet. Looks like its powered by electicity.'). ].
+        itemMap at: 'tapestry' put: [ self printLines: #('The tapestry depicts a man and a woman, naked, passionately kissing.'). ].
+        itemMap at: 'broken_mirrors' put: [ self printLines: #('There is a lot of broken mirrors laying on the ground.'
+          'Looks like a person here cared about his looks a lot...'). ].
+        itemMap at: 'blanket' put: [ self printLines: #('A terribly torn blanket—someone must have suffered greatly here.'). ].
+        itemMap at: 'notebook' put: [ self printLines: #('I cant take this anymore. Its driving me insane.'
+          'These bastards keep forcing us to drink some'
+          'kind of potions, and every time, I feel worse.'
+          'My body is burning, my head is spinning, and I cant'
+          'stop shaking. Its like theyre doing this on purpose.'
+          'My cellmate—he mentioned something about'
+          'them testing their potions on us, trying to find a cure'
+          'for immortality. I dont even know what to believe anymore.'
+          'Theyve labeled me as envious. Envious? I was just talking'
+          'to my coworkers wife, for Gods sake! Its'
+          'all a misunderstanding, a fucking mistake. I swear'
+          'to God, I wasnt doing anything wrong. But now'
+          'they have me here, locked up in this hellhole,'
+          'torturing me with their drugs and lies.'
+          'Im so fucking scared. What are they doing to us?'
+          'I just want out of here. I dont deserve this. Please...'
+          'please, someone, just let us go............'). ].
+        itemMap at: 'paper' put: [ self printLines: #('He was too lazy to stand up and throw them into the bin...'). ].
+        itemMap at: 'written_paper' put: [ self printLines: #('I dont understand why they keep me here. All I'
+          'ever wanted was a happy life, nothing more. I'
+          'never asked for this... for any of this. The fear...'
+          'its overwhelming. I feel trapped, like a caged'
+          'animal. The things that keep me here, I dont'
+          'even think they are fully human. They speak in a'
+          'strange way, like their words are not their own,'
+          'and their eyes... they are empty, lifeless. No'
+          'emotion. Just cold, heartless beings. Their cruelty'
+          'knows no bounds. They dont care, they never'
+          'cared. I cant escape, no matter how hard I try. I fear'
+          'they have already taken something from me,'
+          'something inside. I dont know how much longer'
+          'I can endure this. Please, someone... anyone... I'
+          'just want to be free...'). ].
+        itemMap at: 'lit_torch' put: [ self printLines: #('The torch is burning but fixed to the wall.'
+              'You could definitely use it to set something on fire.'). "Torch unlit -> lit"
+               self printLines: #('The torch is burning but fixed to the wall.'
+              'You could definitely use it to set something on fire.').].
+        itemMap at: 'chain' put: [ self printLines: #('The chain is covered in a large amount of dried'
+          'blood, as if someone had been hung here by their'
+          'hands, struggling violently and injuring themselves.'). ].
+        itemMap at: 'generator' put: [ 
+            isGeneratorOn ifTrue: [
+                self printLines: #('Power off.').
+                isGeneratorOn := false
+                ]
+            ifFalse: [
+                self printLines: #('Power on.').
+                isGeneratorOn := true
+            ]
+        ].
+        itemMap at: 'chair' put: [ self printLines: #('The chair is barely holding together; someone must have thrown it around a lot.'). ].
+        itemMap at: 'r1tual' put: [ self printLines: #( 'Y0u b3c0m3 1mm0rt@l, but @t th3 c0st 0f n3v3r'
+          'b3ing @bl3 t0 l34v3 th1s h0us3. T3rr0r1f1c v01c3s'
+          'p0ss3ss y0u, dr1v1ng y0u t0 m@dness.'
+          'Y0u w1ll n3v3r kn0w p3@c3 @g@1n...'
+          '1/3 Madness Ending. Use command:  q     to leave.'
+          ''). ].
+        itemMap at: 'h3lp' put: [ self printLines: #('Y0u m@n@g3 t0 fr33 th3 p30pl3 1n th3 gr33n l1qu1d,'
+          '@nd th3Y r34v3@l th31r trU3 f0rm. Th3y'
+          '@r3 n0t hum@ns, but s0m3th1ng m0r3 d@rk @nd'
+          'anc13nt. Th3y b3g1n t0 c0rrupt y0ur m1nd,'
+          'wh1sp3r1ng 1n y0ur 34rs, thr34t3n1ng t0 d3stROY 4ll'
+          'th@t y0u kn0w. Y0u r3@l1z3 th@t y0u h@v3'
+          'f@ll3n 1nt0 th31r tr@p, @nd th@t n0t 3v3n y0u'
+          'c@nn0t 3sc@p3 th31r p0w3r. Y0ur b0dY 1s st1ll'
+          'y0urs, but y0ur s0ul 1s n0w th31rs.'
+          '2/3 Trap Ending. Use command:  q     to leave.'). ].
+        itemMap at: 'a1sl3' put: [ self printLines: #(          'You escaped through the hole, following the bird.'
+          'It led you outside the building, and after what'
+          'you saw inside, you decided to get as far away from'
+          'there as possible. A long journey lies ahead, with'
+          'many questions waiting to be answered—who you'
+          'are and how you ended up in that terrifying'
+          'place. But you remain hopeful.'
+          '3/3 Good Ending. Use command:  q     to leave.'). ].
         
         ]
 
@@ -341,9 +461,7 @@ Object subclass: Game [
         ifFalse: [location := newLocation. self printLocationDescription: location].
         
         "newLocation isNil ifFalse: [location := newLocation. printLocationDescription location]."
-        
     ]
-    
     readCommand [
         Transcript show: '> '.
         ^ FileStream stdin nextLine
@@ -352,7 +470,7 @@ Object subclass: Game [
     "Run the game."
 run [
     | cmd commandMap |
-
+    
     self printLines: introductionText.
     self printLines: instructionsText.
 
@@ -360,6 +478,7 @@ run [
     commandMap := Dictionary new.
 
     commandMap at: 'instructions' put: [ self printLines: instructionsText. ].
+    commandMap at: 'i' put: [ self printLines: instructionsText. ].
     commandMap at: 'quit' put: [ isGameOver := true ].
     commandMap at: 'q' put: [ isGameOver := true ].
     commandMap at: 'test' put: [ | d | d:= garden east. self printLocationDescription: d ].
@@ -367,18 +486,59 @@ run [
     commandMap at: 's' put: [ self move: 'south'. ].
     commandMap at: 'e' put: [ self move: 'east'. ].
     commandMap at: 'w' put: [ self move: 'west'. ].
-    commandMap at: 'd' put: [self printLocationDescription: location].
+    commandMap at: 'north' put: [ self move: 'north'. ].
+    commandMap at: 'south' put: [ self move: 'south'. ].
+    commandMap at: 'east' put: [ self move: 'east'. ].
+    commandMap at: 'west' put: [ self move: 'west'. ].
+    commandMap at: 'description' put: [self printLocationDescription: location].
 
-    "Game loop."
-    [isGameOver] whileFalse: [
-        cmd := self readCommand.
-        "Check if the command is in the dictionary and execute the corresponding action"
-        commandMap at: cmd ifPresent: [ :action | action value ].
-        "If the command is not found in the map, print unknown command"
-        (commandMap at: cmd ifAbsent: [ nil ]) isNil ifTrue: [
-            self printLines: #('Unknown command.' '')
-        ]
-    ]
+"Game loop."
+[isGameOver] whileFalse: [
+    | cmd action prefix |
+    cmd := self readCommand.
+    
+    "Check if the command is in the dictionary and execute the corresponding action"
+    action := commandMap at: cmd ifAbsent: [ nil ].
+    action ifNotNil: [ 
+        action value. "Execute the action"
+    ] ifNil: [
+        "Handle 'interact' commands"
+        prefix := 'interact '.
+        (cmd size >= prefix size and: [(cmd copyFrom: 1 to: prefix size) = prefix]) ifTrue: [
+            cmd := cmd copyFrom: (prefix size + 1) to: cmd size. "Extract item after 'interact '"
+            ((location interactables) includes: cmd) ifTrue: [
+                action := itemMap at: cmd ifAbsent: [ nil ].
+                action ifNotNil: [ 
+                    action value.
+                ] ifNil: [
+                    self printLines: #('Unknown interact.' '')
+                ].
+            ] ifFalse: [ 
+                self printLines: #('Unknown interact.' '')
+            ].
+        ] ifFalse: [
+            "Handle 'pickup' commands"
+            prefix := 'pickup '.
+            (cmd size >= prefix size and: [(cmd copyFrom: 1 to: prefix size) = prefix]) ifTrue: [
+                cmd := cmd copyFrom: (prefix size + 1) to: cmd size. "Extract item after 'pickup '"
+                ((location items) includes: cmd) ifTrue: [
+                    action := itemMap at: cmd ifAbsent: [ nil ].
+                    action ifNotNil: [ 
+                        action value.
+                    ] ifNil: [
+                        self printLines: #('Unknown pickup.' '')
+                    ].
+                ] ifFalse: [ 
+                self printLines: #('Unknown pickup.' '')
+                ].
+            ] ifFalse: [
+                self printLines: #('Unknown command.' '')
+            ].
+        ].
+    ].
+]
+
+
 ]
 
 ]
