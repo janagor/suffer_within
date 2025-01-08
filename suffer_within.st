@@ -231,7 +231,7 @@ Object subclass: Game [
               'bones, and remnants of feasts. The air is thick'
               'with the stench of excess and decay, a grim reminder'
               'of gluttony’s punishment.')
-              interactables: #('rotting food''floor''chest') asSet
+              interactables: #('rotting_food' 'floor' 'chest') asSet
               items: #() asSet.
         lustCell := Location name: 'Lust Cell'
               description: #(
@@ -245,7 +245,7 @@ Object subclass: Game [
               'filled with the remnants of unchecked desire.'
               'In the corner, there is a magnetic card held by a large electric magnet.'
               'There is no way to take it while this magnet is powered on')
-              interactables: #('magnet''tapestry''broken mirrors') asSet
+              interactables: #('magnet' 'tapestry' 'broken_mirrors') asSet
               items: #() asSet.
         mediumSecurityPrison := Location name: 'Medium Security Prison'
               description: #(
@@ -268,7 +268,7 @@ Object subclass: Game [
               'a small window offers only a sliver of the outside'
               'world. The floor is covered in a layer of dust,'
               'untouched, as if no one has ever truly rested here.')
-              interactables: #('blanket''notebook') asSet
+              interactables: #('blanket' 'notebook') asSet
               items: #() asSet.
         slothCell := Location name: 'Sloth Cell'
               description:  #(
@@ -277,7 +277,7 @@ Object subclass: Game [
               'papers litter the floor. A cracked lamp barely'
               'lights the space, and the air is stale, untouched by'
               'effort or care.')
-              interactables: #('paper''written paper') asSet "unlit torch?"
+              interactables: #('paper' 'written_paper') asSet "unlit torch?"
               items: #('unlit_torch') asSet.
         highSecurityPrison := Location name: 'High Security Prison'
               description: #(
@@ -302,7 +302,7 @@ Object subclass: Game [
               'some hissing softly. The floor is stained, and the'
               'flickering lights cast unsettling shadows, making'
               'the room feel both powerful and dangerous.')
-              interactables: #('generator''lit torch') asSet
+              interactables: #('generator' 'lit_torch') asSet
               items: #() asSet.
         wrathCell := Location name: 'Wrath Cell'
               description: #(
@@ -316,7 +316,7 @@ Object subclass: Game [
               'silence. A rusted, bloodstained chain dangles'
               'from the ceiling, suggesting past violence, while the'
               'faint smell of sweat and anger lingers in the air.')
-              interactables: #('scratches''chain''chair') asSet
+              interactables: #('scratches' 'chain' 'chair') asSet
               items: #() asSet.
         lab := Location name: 'Lab'
               description: #(
@@ -398,7 +398,7 @@ Object subclass: Game [
               'l3@v3 th1s h0us3 @g@1n.'
               ''
               '2. Y0u br34k th3 c0mp@rtm3nts @nd try t0 s@v3 th3s3 p30pl3,'
-              'but y0u d0nt kn0w wh@t th3Y r34llY @r3.') asSet.
+              'but y0u d0nt kn0w wh@t th3Y r34llY @r3.').
               lab interactables: #('r1tual' 'h3lp') asSet.
             ]
             ifFalse: [
@@ -411,7 +411,7 @@ Object subclass: Game [
   'They are indexed with two numbers: row and column from 0 to 200.'
   'You can search any of them.'
   'Enter two numbers separated by a space:'). 
-  self readCommand == '89 144' ifTrue: [
+  self readCommand = '89 144' ifTrue: [
                 self printLines: #('Congratulations! You guessed the correct numbers!' 'a rune appears in library').
                 library items add: 'rune1'.
                 library interactables remove: 'book'.
@@ -450,12 +450,12 @@ Object subclass: Game [
           'from your hands and fell to the ground, shattering.'
           'Something strange fell out of it.'). 
             closet items add: 'rune2'.
-            closet items remove: 'crystal_ball'.].
+            closet interactables remove: 'crystal_ball'.].
         itemMap at: 'floor' put: [ self printLines: #('There is such a mess in here...'). ].
         itemMap at: 'magnetic_card' put: [ highSecurityPrison north: lab. ].
         itemMap at: 'golden_key' put: [ garden north: hall. ].
-        itemMap at: 'rune1' put: [ inventory includes: 'rune2' ifTrue: [hall north:  lowSecurityPrison.]. ].
-        itemMap at: 'rune2' put: [ inventory includes: 'rune2' ifTrue: [hall north:  lowSecurityPrison.]. ].
+        itemMap at: 'rune1' put: [ (inventory includes: 'rune2') ifTrue: [hall north:  lowSecurityPrison.]. ].
+        itemMap at: 'rune2' put: [ (inventory includes: 'rune2') ifTrue: [hall north:  lowSecurityPrison.]. ].
         itemMap at: 'rotting_food' put: [ self printLines: #('A lot of stinky, fat, rotting food. It smells horribly...'). ].
         itemMap at: 'dirty_floor' put: [ self printLines: #('Floor is really sticky. Somebody spilled a lot of wine in there.'). ].
         itemMap at: 'chest' put: [ self printLines: #('A chest full of bones and some kind of meat. I hope'
@@ -499,7 +499,7 @@ Object subclass: Game [
           'I can endure this. Please, someone... anyone... I'
           'just want to be free...'). ].
         itemMap at: 'lit_torch' put: [ 
-        inventory includes: 'unlit_torch' ifTrue: [
+        (inventory includes: 'unlit_torch') ifTrue: [
                 self printLines: #('You take the unlit torch from your inventory and light it up.').
                 inventory remove: 'unlit_torch'.
                 inventory add: 'lit_torch'.
@@ -517,13 +517,15 @@ Object subclass: Game [
         itemMap at: 'generator' put: [ 
             isGeneratorOn ifTrue: [
                 self printLines: #('Power off.').
-                isGeneratorOn := false
-                inventory includes: 'magnetic_card' ifFalse: [ lustCell items add: 'magnetic_card' ifAbsent: []].
+                isGeneratorOn := false.
+                (inventory includes: 'magnetic_card') ifFalse: [ lustCell items add: 'magnetic_card'].
+                (inventory includes: 'lit_torch') ifFalse: [ generatorRoom east:  nil.].
                 ]
             ifFalse: [
                 self printLines: #('Power on.').
-                isGeneratorOn := true
+                isGeneratorOn := true.
                 lustCell items remove: 'magnetic_card' ifAbsent: [].
+                generatorRoom east:  highSecurityPrison.
             ]
         ].
         itemMap at: 'chair' put: [ self printLines: #('The chair is barely holding together; someone must have thrown it around a lot.'). ].
@@ -559,6 +561,7 @@ Object subclass: Game [
     
     "Print the description of a location."
     printLocationDescription: aLocation [
+    Transcript show: aLocation name; cr.
     self printLines: aLocation description.
     self printLines: #(' ').
     self printLines: #('#Interactibles here:').
