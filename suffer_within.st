@@ -335,8 +335,10 @@ Object subclass: Game [
               '2. Y0u br34k th3 c0mp@rtm3nts @nd try t0 s@v3 th3s3 p30pl3,'
               'but y0u d0nt kn0w wh@t th3Y r34llY @r3.'
               ''
-              '3. Y0U RUN F0R Y0UR L1F3 THR0UGH TH3 A1SL3') asSet
-              interactables: #('r1tual''h3lp''a1sl3') asSet
+              '3. You noticed a chirping bird that flew out through a hole in the wall.'
+              'You decide to escape through it too.'
+              'Y0U RUN F0R Y0UR L1F3 THR0UGH TH3 A1SL3') asSet
+              interactables: #('r1tual' 'h3lp' 'a1sl3') asSet
               items: #() asSet.
         
         "garden    north: hall. Requires golden_key"
@@ -382,6 +384,22 @@ Object subclass: Game [
         hasPlayedSlingshot ifTrue: [
                 self printLines: #('You took too many shots... The bird is killed!').
                 isBirdKilled := true.
+              lab description: #(
+              'Th3 d00r cl0s3s b3hind y0u...'
+              'Gr33n l1qu1d f1lls th3 c0mp@rtm3nts w1th h@lf-c0nsci0us b0d13s.'
+              'M@ny ch3m1c@l @pp@r@tus3s @r3 3v3rYwh3r3.'
+              '@t th3 3nd, @ r3d c@rp3t c0v3rs th3 fl00r, w1th'
+              '@ c1rcl3 0f fl@m3s @nd @n 0p3n b00k.'
+              ''
+              'P!CK: '
+              ''
+              '1. Y0u r34d wh@ts 1n th3 b00k @nd p3rf0rm th3 r1tual,'
+              'b3c0m1ng 1mm0rt@l, but y0u c@nn0t 3v3r'
+              'l3@v3 th1s h0us3 @g@1n.'
+              ''
+              '2. Y0u br34k th3 c0mp@rtm3nts @nd try t0 s@v3 th3s3 p30pl3,'
+              'but y0u d0nt kn0w wh@t th3Y r34llY @r3.') asSet.
+              lab interactables: #('r1tual' 'h3lp') asSet.
             ]
             ifFalse: [
                 self printLines: #('Golden key falls to the ground').
