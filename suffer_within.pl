@@ -19,10 +19,10 @@ path(garden, n, hall) :- at(golden_key, eq).
 path(hall, s, garden).
 
 path(garden, e, glasshouse).
-path(glasshouse, w, garden).
+path(glasshouse, w, garden) :- retract(shot_enabled).
 
 path(hall, w, library).
-path(library, e, hall).
+path(library, e, hall) :- clear_books.
 
 path(hall, e, banquet_hall).
 path(banquet_hall, w, hall).
@@ -165,15 +165,21 @@ interactable :-
 interact(slingshot) :-
 	i_am_at(glasshouse),
 	interactable_at(slingshot, glasshouse),
-	retract(interactable_at(slingshot, glasshouse)),
-	assert(at(golden_key, glasshouse)),
-	write('You shot a skeleton and a key from his mouth fell on the ground.'),
+	write('Now you can shoot the skeleton.'), nl,
+	write('To make a shot enter `shot()` with the number corresponding to '), nl,
+	write('an angle you want to shoot with. '), nl,
+	write('The angle should be a number between 0 and 90. '), nl,
+	write('Example: shot(45).'),
+	assert(shot_enabled),
 	nl,!.
 
 interact(piece_of_paper) :-
 	i_am_at(library),
 	interactable_at(piece_of_paper, library),
-	write('The only readable characters are some numbers: [tutaj wstawic numery]'),
+	write('I am a sequence where each number grows,'), nl,
+	write('By adding the two that came before it, it shows.'), nl,
+	write('Find the pair just under 200s crest,'), nl,
+	write('The penultimate and ultimate in my test.'), nl,
 	nl, !.
 
 interact(window) :-
@@ -194,10 +200,13 @@ interact(window) :-
 interact(book) :-
 	i_am_at(library),
 	interactable_at(book, library),
-	assert(at(rune1, library)),
-	retract(interactable_at(book, library)),
-	write('There was something inside of this book'), nl,
-	write('but when you opened the book it fell on the ground'),
+	write('There are a lot of books in the library.'), nl,
+	write('They are indexed with two numbers: row and column from 0 to 200.'), nl,
+	write('You can search any of them with `book(_,_)` '), nl,
+	write('with numbers corresponding to the indexes. '), nl,
+	write('The angle should be between 1 and 200'), nl,
+	write('Example: book(100,100).'),
+	books,
 	nl, !.
 
 interact(generator) :-
@@ -213,9 +222,18 @@ interact(generator) :-
 	i_am_at(generator_room),
 	interactable_at(generator, generator_room),
 	assert(on(generator)),
+	at(magnetic_card, lust_cell),
 	retract(at(magnetic_card, lust_cell)),
 	write('The generator is turned on now.'),
 	nl, !.
+
+interact(generator) :-
+	i_am_at(generator_room),
+	interactable_at(generator, generator_room),
+	assert(on(generator)),
+	write('The generator is turned on now.'),
+	nl, !.
+
 
 interact(painting) :-
 	i_am_at(banquet_hall),
@@ -410,7 +428,7 @@ interact(h3lp) :-
 	write('wh1sp3r1ng 1n y0ur 34rs, thr34t3n1ng t0 d3stROY 4ll'), nl,
 	write('th@t y0u kn0w. Y0u r3@l1z3 th@t y0u h@v3'), nl,
 	write('f@ll3n 1nt0 th31r tr@p, @nd th@t n0t 3v3n y0u'), nl,
-	write(' c@nn0t 3sc@p3 th31r p0w3r. Y0ur b0dY 1s st1ll'), nl,
+	write('c@nn0t 3sc@p3 th31r p0w3r. Y0ur b0dY 1s st1ll'), nl,
 	write('y0urs, but y0ur s0ul 1s n0w th31rs.'), nl,nl,
 	write('2/3 Trap Ending. Use command:  halt.     to leave.'),
 	retractall(at(_, _)), retractall(i_am_at(_)), retractall(interactable_at(_, _)), retractall(used(_)),
@@ -418,8 +436,15 @@ interact(h3lp) :-
 
 interact(a1sl3) :-
 	i_am_at(lab),
-	interactable_at(a1sl3),
-	write('Running through the maze'),
+	interactable_at(a1sl3, lab),
+	write('You escaped through the hole, following the bird.'),nl,
+	write('It led you outside the building, and after what'), nl,
+	write('you saw inside, you decided to get as far away from'), nl,
+	write('there as possible. A long journey lies ahead, with'), nl,
+	write('many questions waiting to be answered—who you'), nl,
+	write('are and how you ended up in that terrifying'), nl,
+	write('place. But you remain hopeful.'),nl,
+	write('3/3 Good Ending. Use command:  halt.     to leave.'),
 	nl, !.
 	
 interact(Object) :-
@@ -540,6 +565,7 @@ go(e) :-
 	write('You cant go out, its too dark out there!'),
 	nl, !.
 
+
 go(n) :-
 	i_am_at(high_security_prison),
 	on(generator),
@@ -613,6 +639,8 @@ instructions :-
 
 start :-
         instructions,
+	init_books,
+	init_shot,
         look.
 
 
@@ -811,6 +839,7 @@ describe(wrath_cell) :-
 
 
 describe(lab) :-
+	interactable_at(a1sl3, lab),
 	write('Y0u ar3 1n th3 1ab0r@t0ry...'), nl,
 	write('Th3 d00r cl0s3s b3hind y0u...'), nl,
 	write('Gr33n l1qu1d f1lls th3 c0mp@rtm3nts w1th h@lf-c0nsci0us b0d13s.'), nl,
@@ -823,6 +852,116 @@ describe(lab) :-
 	write('l3@v3 th1s h0us3 @g@1n.'), nl,write(''),nl,
 	write('2. Y0u br34k th3 c0mp@rtm3nts @nd try t0 s@v3 th3s3 p30pl3,'), nl,
 	write('but y0u d0nt kn0w wh@t th3Y r34llY @r3.'), nl,write(''),nl,
-	write('3. Y0U RUN F0R Y0UR L1F3 THR0UGH TH3 A1SL3'), nl.
+	write('3. You noticed a chirping bird that flew out through a hole in the wall.'), nl,
+	write('You decide to escape through it too.'), nl, !.
+
+describe(lab) :-
+	write('Y0u ar3 1n th3 1ab0r@t0ry...'), nl,
+	write('Th3 d00r cl0s3s b3hind y0u...'), nl,
+	write('Gr33n l1qu1d f1lls th3 c0mp@rtm3nts w1th h@lf-c0nsci0us b0d13s.'), nl,
+	write('M@ny ch3m1c@l @pp@r@tus3s @r3 3v3rYwh3r3.'), nl,
+	write('@t th3 3nd, @ r3d c@rp3t c0v3rs th3 fl00r, w1th'), nl,
+	write('@ c1rcl3 0f fl@m3s @nd @n 0p3n b00k.'), nl, write(''),nl,
+	write('P!CK: '), nl,write(''),nl,
+	write('1. Y0u r34d wh@ts 1n th3 b00k @nd p3rf0rm th3 r1tual,'), nl,
+	write('b3c0m1ng 1mm0rt@l, but y0u c@nn0t 3v3r'), nl,
+	write('l3@v3 th1s h0us3 @g@1n.'), nl,write(''),nl,
+	write('2. Y0u br34k th3 c0mp@rtm3nts @nd try t0 s@v3 th3s3 p30pl3,'), nl,
+	write('but y0u d0nt kn0w wh@t th3Y r34llY @r3.'), nl,write(''),nl.
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% start of part including shooting game
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+:- dynamic shots_counter/1, random_angle/1, shot_rock/1.
+:- dynamic shot_enabled/0, bird_killed/0, key_found/0.
+
+popup_message :-
+    write('While trying your best to shoot the key you got lost yourself...'), nl,
+    write('As you always do... You did not see the bird flying by window...'), nl,
+    write('The rock hit it and you could only see it dropping...'), nl.
+
+init_random_angle :-
+    random_between(0, 90, X),
+    assert(random_angle(X)).
+
+init_shot :-
+    init_random_angle,
+    assert(shots_counter(0)),
+    retractall(shot_enabled),
+    retractall(bird_killed),
+    retractall(key_found).
+
+increment_counter :-
+    shots_counter(TC),
+    NewTC is TC + 1,
+    retract(shots_counter(TC)),
+    assert(shots_counter(NewTC)),
+    (NewTC =:= 7 -> (popup_message, retract(interactable_at(a1sl3, lab))) ; true).
+
+check_shot(X) :-
+    random_angle(RA),
+    (
+        X =:= RA -> retract(interactable_at(slingshot, glasshouse)),
+		assert(at(golden_key, glasshouse)),
+		write('You shot a skeleton and a key from his mouth fell on the ground.'),
+		assert(key_found),
+		assert(bird_killed),
+		retract(shot_rock);
+        X < RA -> write('Too low...');
+        X > RA -> write('Too high...')
+    ),
+    nl.
+
+shot(Angle) :-
+    ( shot_enabled, \+ key_found ->
+        check_shot(Angle),
+	increment_counter,
+	nl
+    ;
+        write('You cannot shot anything.'), nl
+    ).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% end of part including shooting game
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% start of part including library game
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+:- dynamic books_available/0, books/2, book_found/0.
+
+init_books :-
+    retractall(books_available),
+    retractall(book_found).
+
+books :-
+    ( \+ books_available, \+ book_found -> 
+        assert(books_available)
+    ;
+       true
+    ).
+
+book(X, Y) :-
+    ( \+ books_available; book_found ->
+        write('No books are available.'), nl
+    ;
+      ( X =< 0 ; X > 200 ; Y =< 0 ; Y > 200 ) ->
+        write('There are no books at such indexes!'), nl
+    ;
+      ( X =:= 89, Y =:= 144 ) ->
+	assert(at(rune1, library)),
+	retract(interactable_at(book, library)),
+	clear_books, assert(book_found),
+	write('There was something inside of this book'), nl,
+	write('but when you opened the book it fell on the ground'), nl
+    ;
+        write('Nothing special...'), nl
+    ).
+
+clear_books :-
+    retractall(books_available).
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% end of part including library game
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
